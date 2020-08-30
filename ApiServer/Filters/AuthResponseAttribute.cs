@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -27,7 +28,13 @@ namespace ApiServer.Filters
         {
             if (allowedApps.Count == 0)
             {
-                allowedApps.Add("65d3a4f0-0239-404c-8394-21b94ff50604", "WLUEWeL3so2hdHhHM5ZYnvzsOUBzSGH4+T3EgrQ91KI=");
+                bool fault = false;
+                DataTable clientsTable = PostgreSQLClass.GetClientsDatatable(out fault);
+
+                foreach (DataRow row in clientsTable.Rows)
+                {
+                    allowedApps.Add((string)row["client_name"], (string)row["client_key"]);
+                }
             }
         }
 

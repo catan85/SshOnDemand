@@ -7,17 +7,21 @@ namespace GeneratorAppIdAppKey
     {
         static void Main(string[] args)
         {
-            using (var cryptoProvider = new RNGCryptoServiceProvider())
+            while (true)
             {
-                var APPID = Guid.NewGuid();
-                byte[] secretKeyByteArray = new byte[32]; //256 bit
-                cryptoProvider.GetBytes(secretKeyByteArray);
-                var APIKey = Convert.ToBase64String(secretKeyByteArray);
+                using (var cryptoProvider = new RNGCryptoServiceProvider())
+                {
+                    var APPID = Guid.NewGuid();
+                    byte[] secretKeyByteArray = new byte[32]; //256 bit
+                    cryptoProvider.GetBytes(secretKeyByteArray);
+                    var APIKey = Convert.ToBase64String(secretKeyByteArray);
 
-                Console.WriteLine("AppId : " + APPID);
-                Console.WriteLine("AppKey: " + APIKey);
+                    Console.WriteLine("AppId : " + APPID);
+                    Console.WriteLine("AppKey: " + APIKey);
+                }
+                System.Console.ReadLine();
             }
-            System.Console.ReadLine();
+
         }
     }
 }

@@ -17,7 +17,15 @@ namespace ApiServer
     {
         public Startup(IConfiguration configuration)
         {
+
+            AppSettings settings = new AppSettings();
+
             Configuration = configuration;
+            configuration.Bind(settings);
+
+
+            KeysGeneration.GenerateKeys();
+
         }
 
         public IConfiguration Configuration { get; }

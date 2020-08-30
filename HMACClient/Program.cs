@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using SshOnDemandEntities;
 
 namespace HMACClient
 {
@@ -33,68 +34,87 @@ namespace HMACClient
 
             HttpClient client = HttpClientFactory.Create(customDelegatingHandler);
 
-            var order = new Order
-            {
-                OrderID = 10248,
-                CustomerName = "Pranaya Rout",
-                CustomerAddress = "Mumbai|Mahatashtra|IN",
-                ContactNumber = "1234567890",
-                IsShipped = true
-            };
+            ConsoleKey key = ConsoleKey.S;
+            HttpResponseMessage response = null;
 
-            
             while (true)
             {
-                HttpResponseMessage response = await client.GetAsync(apiBaseAddress + "secret");
-                //HttpResponseMessage response = await client.PostAsJsonAsync(apiBaseAddress + "secret", order);
+                // Test della chiamata a get, metodo secret, è un metodo di test per lo sviluppo del meccanismo
+                if (key == ConsoleKey.S)
+                {
+                    response = await client.GetAsync(apiBaseAddress + "secret");
+                }
+
+                else if (key == ConsoleKey.P)
+                {
+                    DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
+
+                    response = await client.PostAsJsonAsync(apiBaseAddress + "secret", order);
+                }
+
+
+
                 if (response.IsSuccessStatusCode)
                 {
-                    string responseString = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine(responseString);
-                    response.Headers.TryGetValues("Authorization", out IEnumerable<string> authString);
-
-
-
-                    if (authString!=null && authString.Count() > 0 && authString.First().ToString().StartsWith("hmacauth "))
+                    bool authenticated = CheckResponseAuthentication(response);
+                    if (authenticated)
                     {
-                        var authHeader = authString.First().ToString().Replace("hmacauth ", "");
-
-                        var authArray = authHeader.Split(":");
-
-                        if (authArray.Length == 4)
-                        {
-                            var APPId = authArray[0];
-                            var incomingBase64Signature = authArray[1];
-                            var nonce = authArray[2];
-                            var requestTimeStamp = authArray[3];
-
-                            var isValid = IsValidResponse(response, APPId, incomingBase64Signature, nonce, requestTimeStamp);
-
-                            if (isValid.Result == false)
-                            {
-                                Console.WriteLine("Invalid response");
-                            }
-                            else
-                            {
-                                Console.WriteLine("HTTP Status: {0}, Reason {1}. Press ENTER to exit", response.StatusCode, response.ReasonPhrase);
-                            }
-
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid response");
-                        }
+                        string responseString = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(responseString);
                     }
-
                 }
                 else
                 {
                     Console.WriteLine("Failed to call the API. HTTP Status: {0}, Reason {1}", response.StatusCode, response.ReasonPhrase);
                 }
 
-                Console.ReadLine();
+                key = Console.ReadKey().Key;
+
             }
            
+        }
+
+
+        private static bool CheckResponseAuthentication(HttpResponseMessage response)
+        {
+            bool authenticated = false;
+
+            response.Headers.TryGetValues("Authorization", out IEnumerable<string> authString);
+
+
+            if (authString != null && authString.Count() > 0 && authString.First().ToString().StartsWith("hmacauth "))
+            {
+                var authHeader = authString.First().ToString().Replace("hmacauth ", "");
+
+                var authArray = authHeader.Split(":");
+
+                if (authArray.Length == 4)
+                {
+                    var APPId = authArray[0];
+                    var incomingBase64Signature = authArray[1];
+                    var nonce = authArray[2];
+                    var requestTimeStamp = authArray[3];
+
+                    var isValid = IsValidResponse(response, APPId, incomingBase64Signature, nonce, requestTimeStamp);
+
+                    if (isValid.Result == false)
+                    {
+                        Console.WriteLine("Invalid response");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Valid response");
+                        authenticated = true;
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("Invalid response");
+                }
+            }
+
+            return authenticated;
         }
 
         private static async Task<bool> IsValidResponse(HttpResponseMessage response, string returnedAPPId, string incomingBase64Signature, string nonce, string requestTimeStamp)

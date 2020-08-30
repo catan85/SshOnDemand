@@ -17,7 +17,9 @@ namespace ApiServer.Controllers
         [HttpGet(template: "secret")]
         public IActionResult GetSecret()
         {
-            return Ok("Non ho segreti");
+            string clientName = (string)HttpContext.Items["ClientName"];
+
+            return Ok("Non ho segreti, " + clientName);
         }
     }
 }

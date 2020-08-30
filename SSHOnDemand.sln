@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HMACClient", "HMACClient\HM
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiServer", "ApiServer\ApiServer.csproj", "{2354933B-6F73-4271-8614-ECC396DEF218}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SshOnDemandEntities", "SshOnDemandEntities\SshOnDemandEntities.csproj", "{747D3010-A21E-4910-A65B-F759DD38D42B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{2354933B-6F73-4271-8614-ECC396DEF218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2354933B-6F73-4271-8614-ECC396DEF218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2354933B-6F73-4271-8614-ECC396DEF218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{747D3010-A21E-4910-A65B-F759DD38D42B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{747D3010-A21E-4910-A65B-F759DD38D42B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{747D3010-A21E-4910-A65B-F759DD38D42B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{747D3010-A21E-4910-A65B-F759DD38D42B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -17,7 +18,6 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-
 namespace ApiServer.Filters
 {
 
@@ -27,12 +27,18 @@ namespace ApiServer.Filters
         private static Dictionary<string, string> allowedApps = new Dictionary<string, string>();
         private readonly UInt64 requestMaxAgeInSeconds = 300; //Means 5 min
         private readonly string authenticationScheme = "hmacauth";
-
+        
         public AuthRequestAttribute()
         {
             if (allowedApps.Count == 0)
             {
-                allowedApps.Add("65d3a4f0-0239-404c-8394-21b94ff50604", "WLUEWeL3so2hdHhHM5ZYnvzsOUBzSGH4+T3EgrQ91KI=");
+                bool fault = false;
+                DataTable clientsTable = PostgreSQLClass.GetClientsDatatable(out fault);
+
+                foreach (DataRow row in clientsTable.Rows)
+                {
+                    allowedApps.Add((string)row["client_name"], (string)row["client_key"]);
+                }
             }
         }
 
@@ -57,6 +63,9 @@ namespace ApiServer.Filters
 
                     var isValid = IsValidRequest(context.HttpContext.Request, APPId, incomingBase64Signature, nonce, requestTimeStamp);
 
+                    // Passaggio del client name al controller per conoscere l'identità del device
+                    context.HttpContext.Items.Add("ClientName", APPId );
+
                     if (isValid.Result == false)
                     {
                         context.Result = new UnauthorizedResult();
@@ -75,7 +84,6 @@ namespace ApiServer.Filters
                 context.Result = new UnauthorizedResult();
                 return;
             }
-
 
             await next();
         }
