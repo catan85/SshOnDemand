@@ -18,6 +18,8 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using System.Net.Http;
+
 namespace ApiServer.Filters
 {
 
@@ -64,7 +66,7 @@ namespace ApiServer.Filters
                     var isValid = IsValidRequest(context.HttpContext.Request, APPId, incomingBase64Signature, nonce, requestTimeStamp);
 
                     // Passaggio del client name al controller per conoscere l'identità del device
-                    context.HttpContext.Items.Add("ClientName", APPId );
+                    context.HttpContext.Items["ClientName"] = APPId;
 
                     if (isValid.Result == false)
                     {
@@ -107,8 +109,15 @@ namespace ApiServer.Filters
                 return false;
             }
 
-            string requestBody = ReadBodyAsString(req.HttpContext.Request);
-            byte[] reqBodyByteArray = Encoding.ASCII.GetBytes(requestBody);
+            // string requestBody = ReadBodyAsString(req.HttpContext.Request);
+            req.EnableBuffering();
+            byte[] reqBodyByteArray = null;
+            req.Body.Position = 0;
+            using (var ms = new MemoryStream(2048))
+            {
+                await req.Body.CopyToAsync(ms);
+                reqBodyByteArray = ms.ToArray();
+            }
 
             byte[] hash = await ComputeHash(reqBodyByteArray);
             if (hash != null)

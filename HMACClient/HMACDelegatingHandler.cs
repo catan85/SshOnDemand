@@ -44,6 +44,7 @@ namespace HMACClient
                 byte[] content = await request.Content.ReadAsByteArrayAsync();
                 MD5 md5 = MD5.Create();
                 byte[] requestContentHash = md5.ComputeHash(content);
+
                 requestContentBase64String = Convert.ToBase64String(requestContentHash);
             }
 

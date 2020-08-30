@@ -10,24 +10,26 @@ using SshOnDemandEntities;
 
 namespace ApiServer.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+
     public class DeveloperController : ControllerBase
     {
         [AuthRequestAttribute]
         [AuthResponseAttribute]
-
         [HttpGet(template: "DeveloperAuth")]
         public IActionResult DeveloperAuth()
         {
             return Ok("You're authenticated");
         }
 
+        [AuthRequestAttribute]
+        [AuthResponseAttribute]
         [HttpPost(template: "DeveloperDeviceConnectionRequest")]
         public IActionResult DeveloperDeviceConnectionRequest([FromBody] DeveloperDeviceConnectionRequestArgs args)
         {
             bool fault = false;
             string developerIdentity = (string)HttpContext.Items["ClientName"];
+
+            Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
             bool isDeveloperAuthorized = PostgreSQLClass.IsDeveloperConnectionToDeviceAuthorized(developerIdentity, args.DeviceName, out fault);
@@ -40,7 +42,7 @@ namespace ApiServer.Controllers
             }
             else  if (!isDeveloperAuthorized)
             {
-                return Unauthorized("Develeper is not authorized to connect to this device");
+                return Ok("Develeper is not authorized to connect to this device");
             }
             else
             {   

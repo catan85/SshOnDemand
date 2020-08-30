@@ -48,8 +48,10 @@ namespace HMACClient
                 else if (key == ConsoleKey.P)
                 {
                     DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
+                    args.DeveloperPublicKey = "abcde";
+                    args.DeviceName = "blabla";
 
-                    response = await client.PostAsJsonAsync(apiBaseAddress + "secret", order);
+                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
                 }
 
 
