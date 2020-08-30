@@ -45,11 +45,21 @@ namespace HMACClient
                     response = await client.GetAsync(apiBaseAddress + "secret");
                 }
 
+                // Test di una richiesta di connessione da parte dello sviluppatore, NON VALIDA
                 else if (key == ConsoleKey.P)
                 {
                     DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
                     args.DeveloperPublicKey = "abcde";
                     args.DeviceName = "blabla";
+
+                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
+                }
+                // Test di una richiesta di connessione da parte dello sviluppatore, VALIDA
+                else if (key == ConsoleKey.O)
+                {
+                    DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
+                    args.DeveloperPublicKey = "abcde";
+                    args.DeviceName = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
 
                     response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
                 }

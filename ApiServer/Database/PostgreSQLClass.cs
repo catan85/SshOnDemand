@@ -41,9 +41,10 @@ namespace ApiServer
 
         public static bool IsDeveloperConnectionToDeviceAuthorized(string developerName, string deviceName, out bool fault)
         {
-            string query = $@"select developers.client_name , devices.client_name from developer_authorizations da 
+            string query = $@"select developers.client_name as developer_name , devices.client_name as device_name from developer_authorizations da 
                             join clients devices on da.device_id = devices.id
-                            join clients as developers on da.developer_id = developers.id";
+                            join clients as developers on da.developer_id = developers.id
+                            where developers.client_name = '{developerName}' and devices.client_name = '{deviceName}'";
 
             DataTable dt = GetDatatable(query, "developer_authorizations", out fault);
 
