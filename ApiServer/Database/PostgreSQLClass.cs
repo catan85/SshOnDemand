@@ -78,9 +78,9 @@ namespace ApiServer
             QueryDatabase(query, out fault);
         }
 
-        public static int CheckDeviceConnection(string deviceName, out bool fault)
+        public static short CheckDeviceConnection(string deviceName, out bool fault)
         {
-            int status = 0;
+            short status = 0;
             string query = $@"SELECT status FROM client_connections
                             JOIN clients 
                             ON client_connections.client_id = clients.id
@@ -89,7 +89,7 @@ namespace ApiServer
 
             if (data.Rows.Count == 1)
             {
-                status = (int)data.Rows[0]["status"];
+                status = (short)data.Rows[0]["status"];
             }
             return status;
         }

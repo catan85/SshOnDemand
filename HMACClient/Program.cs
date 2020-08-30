@@ -63,7 +63,13 @@ namespace HMACClient
 
                     response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
                 }
+                // Test di una richiesta di stato connessione del device da parte dello sviluppatore, VALIDA
+                else if (key == ConsoleKey.I)
+                {
+                    string deviceName = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
 
+                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperCheckDeviceConnection", deviceName);
+                }
 
 
                 if (response.IsSuccessStatusCode)
