@@ -158,8 +158,9 @@ namespace HMACClient
                 // Hashing the request body, so any change in request body will result a different hash
                 // we will achieve message integrity
                 byte[] content = await response.Content.ReadAsByteArrayAsync();
-                Console.WriteLine("Full response content: " + Encoding.UTF8.GetString(content, 0, content.Length));
-
+                
+                string contentString = Encoding.UTF8.GetString(content, 0, content.Length);
+                Console.WriteLine("Full response content: " + contentString);
                 MD5 md5 = MD5.Create();
                 byte[] responseContentHash = md5.ComputeHash(content);
                 responseContentBase64String = Convert.ToBase64String(responseContentHash);

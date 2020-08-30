@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,8 +66,20 @@ namespace ApiServer.Filters
             
                 if (context.Result != null )
                 {
-                    string responseContent = ((ObjectResult)context.Result).Value.ToString();
+
+                    string responseContent = "";
+                    //byte[] responseBodyByteArray = Encoding.ASCII.GetBytes(responseContent);
+                    if (((ObjectResult)context.Result).Value is string)
+                    {
+                        responseContent = ((ObjectResult)context.Result).Value.ToString();
+                    }
+                    else
+                    {
+                        responseContent = JsonConvert.SerializeObject(((ObjectResult)context.Result).Value, Formatting.None);
+                    }
+                    
                     byte[] responseBodyByteArray = Encoding.ASCII.GetBytes(responseContent);
+
                     MD5 md5 = MD5.Create();
                     byte[] responseContentHash = md5.ComputeHash(responseBodyByteArray);
                     responseContentBase64String = Convert.ToBase64String(responseContentHash);
@@ -104,6 +118,16 @@ namespace ApiServer.Filters
 
             //context.HttpContext.Response.Headers.Add(_name, new string[] { _value });
             base.OnResultExecuting(context);
+        }
+
+        public static byte[] ObjectToByteArray(Object obj)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, obj);
+                return ms.ToArray();
+            }
         }
     }
 }

@@ -67,7 +67,7 @@ namespace ApiServer.Controllers
             if (isDeveloperAuthorized && !fault)
             {
                 // Checking device connection status
-                int status = PostgreSQLClass.CheckDeviceConnection(deviceName, out fault);
+                DeviceConnectionStatus status = PostgreSQLClass.CheckDeviceConnection(deviceName, out fault);
 
                 return Ok(status);
             }

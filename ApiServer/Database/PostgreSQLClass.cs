@@ -14,6 +14,7 @@ namespace ApiServer
     using System.Text;
     using System.Configuration;
     using System.Linq;
+    using SshOnDemandEntities;
 
     /// <summary>
     /// Classe di interfacciamento con database Postgresql
@@ -78,10 +79,12 @@ namespace ApiServer
             QueryDatabase(query, out fault);
         }
 
-        public static short CheckDeviceConnection(string deviceName, out bool fault)
+        public static DeviceConnectionStatus CheckDeviceConnection(string deviceName, out bool fault)
         {
-            short status = 0;
-            string query = $@"SELECT status FROM client_connections
+            DeviceConnectionStatus status = new DeviceConnectionStatus();
+            status.Status = 0;
+
+            string query = $@"SELECT status, ssh_ip, ssh_port, ssh_forwarding FROM client_connections
                             JOIN clients 
                             ON client_connections.client_id = clients.id
                             WHERE clients.client_name = '{deviceName}';";
@@ -89,7 +92,10 @@ namespace ApiServer
 
             if (data.Rows.Count == 1)
             {
-                status = (short)data.Rows[0]["status"];
+                status.Status = (short)data.Rows[0]["status"];
+                status.SshHost = (string)data.Rows[0]["ssh_ip"];
+                status.SshPort = (int)data.Rows[0]["ssh_port"];
+                status.SshForwarding = (int)data.Rows[0]["ssh_forwarding"];
             }
             return status;
         }
