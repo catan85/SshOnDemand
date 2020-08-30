@@ -7,6 +7,6 @@ namespace ApiServer
 {
     public class Constants
     {
-        public static string DATETIME_FORMAT_STRING = "yyyy-MM-dd hh:mm:ss";
+        public static string DATETIME_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss";
     }
 }

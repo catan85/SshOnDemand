@@ -15,6 +15,8 @@ namespace ApiServer
 {
     public class Startup
     {
+        CyclicChecks cyclicChecks = new CyclicChecks();
+
         public Startup(IConfiguration configuration)
         {
 

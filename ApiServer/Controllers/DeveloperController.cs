@@ -42,15 +42,43 @@ namespace ApiServer.Controllers
             }
             else  if (!isDeveloperAuthorized)
             {
-                return Ok("Develeper is not authorized to connect to this device");
+                return StatusCode(403, "Develeper is not authorized to connect to this device");
             }
             else
             {   
                 return StatusCode((int)HttpStatusCode.InternalServerError, "Database error");
             }
+        }
 
 
-            
+        [AuthRequestAttribute]
+        [AuthResponseAttribute]
+        [HttpPost(template: "DeveloperCheckDeviceConnection")]
+        public IActionResult DeveloperCheckDeviceConnection([FromBody] string deviceName)
+        {
+            bool fault = false;
+            string developerIdentity = (string)HttpContext.Items["ClientName"];
+
+            Console.WriteLine("Developer identity is: " + developerIdentity);
+
+            // Check developer device connection authorization
+            bool isDeveloperAuthorized = PostgreSQLClass.IsDeveloperConnectionToDeviceAuthorized(developerIdentity, deviceName, out fault);
+
+            if (isDeveloperAuthorized && !fault)
+            {
+                // Checking device connection status
+                int status = PostgreSQLClass.CheckDeviceConnection(deviceName, out fault);
+
+                return Ok(status);
+            }
+            else if (!isDeveloperAuthorized)
+            {
+                return StatusCode(403, "Develeper is not authorized to connect to this device");
+            }
+            else
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, "Database error");
+            }
         }
 
     }

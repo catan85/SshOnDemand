@@ -44,7 +44,7 @@ namespace ApiServer
             string query = $@"select developers.client_name as developer_name , devices.client_name as device_name from developer_authorizations da 
                             join clients devices on da.device_id = devices.id
                             join clients as developers on da.developer_id = developers.id
-                            where developers.client_name = '{developerName}' and devices.client_name = '{deviceName}'";
+                            where developers.client_name = '{developerName}' and devices.client_name = '{deviceName}';";
 
             DataTable dt = GetDatatable(query, "developer_authorizations", out fault);
 
@@ -61,15 +61,15 @@ namespace ApiServer
         public static void InsertDeviceConnectionRequest(string deviceName, bool isRequest, out bool fault)
         {
             string query =
-                            $@" BEGIN
+                            $@" BEGIN;
 								INSERT INTO device_requests (client_id, is_requested, request_timestamp ) 
-                                SELECT clients.id, { (isRequest ? "true" : "false") }, '{DateTime.UtcNow.ToString(Constants.DATETIME_FORMAT_STRING)}'
+                                SELECT clients.id, { (isRequest ? "true" : "false") }, '{CurrentTimestampString()}'
                                 FROM clients where client_name = '{deviceName}'
                                 AND NOT EXISTS ( select true from device_requests where client_id = clients.id );
 
                                 UPDATE device_requests
                                 SET is_requested = { (isRequest ? "true" : "false") },
-                                    request_timestamp = '{DateTime.UtcNow.ToString(Constants.DATETIME_FORMAT_STRING)}'
+                                    request_timestamp = '{CurrentTimestampString()}'
                                 FROM clients where client_name = '{deviceName}'
                                 and client_id = clients.id;
                                 COMMIT;
@@ -78,8 +78,40 @@ namespace ApiServer
             QueryDatabase(query, out fault);
         }
 
+        public static int CheckDeviceConnection(string deviceName, out bool fault)
+        {
+            int status = 0;
+            string query = $@"SELECT status FROM client_connections
+                            JOIN clients 
+                            ON client_connections.client_id = clients.id
+                            WHERE clients.client_name = '{deviceName}';";
+            DataTable data = GetDatatable(query, "connections", out fault);
 
+            if (data.Rows.Count == 1)
+            {
+                status = (int)data.Rows[0]["status"];
+            }
+            return status;
+        }
 
+        public static void DeactivateOldRequests(int maxRequestAgeInSeconds, out bool fault)
+        {
+            string timeLimit = (DateTime.UtcNow - new TimeSpan(0, 0, maxRequestAgeInSeconds)).ToString(Constants.DATETIME_FORMAT_STRING);
+            string query = $"update device_requests set is_requested = false where request_timestamp < '{timeLimit}' and is_requested = true;";
+            QueryDatabase(query, out fault);
+        }
+
+        public static void ResetOldConnections(int maxConnectionAgeInSeconds, out bool fault)
+        {
+            string timeLimit = (DateTime.UtcNow - new TimeSpan(0, 0, maxConnectionAgeInSeconds)).ToString(Constants.DATETIME_FORMAT_STRING);
+            string query = $"update client_connections set status = 0 where connection_timestamp < '{timeLimit}' and status != 0;";
+            QueryDatabase(query, out fault);
+        }
+
+        private static string CurrentTimestampString()
+        {
+            return DateTime.UtcNow.ToString(Constants.DATETIME_FORMAT_STRING);
+        }
 
         /// <summary>
         /// Apertura di una connessione al database
@@ -210,6 +242,11 @@ namespace ApiServer
                 {
                     string commandString = query;
 
+                    using (NpgsqlCommand command = new NpgsqlCommand(commandString, DbConnection))
+                    {
+                        command.CommandTimeout = commandTimeout;
+                        command.ExecuteNonQuery();
+                    }
                 }
             }
             catch (Exception ex)
