@@ -10,6 +10,8 @@ namespace ApiServer
         public static string OS { get; set; }
         public static string ApiKey { get; set; }
 
+        public static string SshAuthorizedKeysFolder { get; set; }
+
         public static string DbHost { get; set; }
 
         public static int DbPort { get; set; }

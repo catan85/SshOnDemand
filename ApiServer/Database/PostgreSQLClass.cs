@@ -129,12 +129,6 @@ namespace ApiServer
             fault = false;
             if (currentConnection == null || currentConnection.State != ConnectionState.Open)
             {
-                if (currentConnection != null)
-                {
-                    currentConnection.Dispose();
-                    currentConnection = null;
-                }
-
                 currentConnection = new NpgsqlConnection(connectionString);
                 currentConnection.Open();
             }
@@ -154,11 +148,12 @@ namespace ApiServer
             }
         }
 
+        private static object dbLocker = new object();
+
         private static DataTable GetDatatable(string query, string tablename, out bool fault)
         {
             DataTable result = null;
-
-            try
+            lock (dbLocker)
             {
                 OpenConnection(ref DbConnection, out fault);
 
@@ -171,24 +166,9 @@ namespace ApiServer
                     result = new DataTable(tablename);
 
                     GetTableFromDB(DbConnection, ref result, commandString, true);
-
-                    return result;
                 }
             }
-            catch (Exception ex)
-            {
-                string errorString = "Postgres database connection error";
-
-                Console.WriteLine(errorString);
-                Console.WriteLine(ex.Message);
-                fault = true;
-                try
-                {
-                    DbConnection.Close();
-                }
-                catch { }
-            }
-
+            
             return result;
         }
 
@@ -196,52 +176,53 @@ namespace ApiServer
         {
            
            bool connectionFault = false;
-           if (currentConnection.State != ConnectionState.Open)
-           {
-               OpenConnection(ref currentConnection, out connectionFault);
-           }
 
-           if (!connectionFault)
-           {
-               string tablename = table.TableName;
+            lock (dbLocker)
+            {
+                OpenConnection(ref currentConnection, out connectionFault);
 
-               using (NpgsqlCommand command = new NpgsqlCommand(selectString, currentConnection))
-               {
-                   command.CommandTimeout = commandTimeout;
-                   using (NpgsqlDataReader reader = command.ExecuteReader())
-                   {
-                       DataTable tempTab = new DataTable(tablename);
-                       while (reader.Read())
-                       {
-                           object[] vals = new object[reader.FieldCount];
-                           if (tempTab.Columns.Count == 0)
-                           {
-                               for (int i = 0; i < reader.FieldCount; i++)
-                               {
-                                   tempTab.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
-                               }
-                           }
-                           reader.GetValues(vals);
-                           tempTab.Rows.Add(vals);
-                       }
+                if (!connectionFault)
+                {
+                    string tablename = table.TableName;
 
-                       table = tempTab;
-                   }
-               }
+                    using (NpgsqlCommand command = new NpgsqlCommand(selectString, currentConnection))
+                    {
+                        command.CommandTimeout = commandTimeout;
+                        using (NpgsqlDataReader reader = command.ExecuteReader())
+                        {
+                            DataTable tempTab = new DataTable(tablename);
+                            while (reader.Read())
+                            {
+                                object[] vals = new object[reader.FieldCount];
+                                if (tempTab.Columns.Count == 0)
+                                {
+                                    for (int i = 0; i < reader.FieldCount; i++)
+                                    {
+                                        tempTab.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
+                                    }
+                                }
+                                reader.GetValues(vals);
+                                tempTab.Rows.Add(vals);
+                            }
 
-               if (table.PrimaryKey != null && setPrimaryKey && table.Columns.Count > 0)
-               {
-                   table.PrimaryKey =
-                       new DataColumn[] { table.Columns[0] };
-               }
-           }
+                            table = tempTab;
+                        }
+                    }
 
+                    if (table.PrimaryKey != null && setPrimaryKey && table.Columns.Count > 0)
+                    {
+                        table.PrimaryKey =
+                            new DataColumn[] { table.Columns[0] };
+                    }
+                }
+            }
         }
 
         private static void QueryDatabase(string query, out bool fault)
         {
-            try
+            lock (dbLocker)
             {
+
                 OpenConnection(ref DbConnection, out fault);
 
                 if (!fault)
@@ -254,19 +235,6 @@ namespace ApiServer
                         command.ExecuteNonQuery();
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                string errorString = "Postgres database connection error";
-
-                Console.WriteLine(errorString);
-                Console.WriteLine(ex.Message);
-                fault = true;
-                try
-                {
-                    DbConnection.Close();
-                }
-                catch { }
             }
         }
    

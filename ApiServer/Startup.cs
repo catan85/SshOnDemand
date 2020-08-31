@@ -25,9 +25,6 @@ namespace ApiServer
             Configuration = configuration;
             configuration.Bind(settings);
 
-
-            KeysGeneration.GenerateKeys();
-
         }
 
         public IConfiguration Configuration { get; }

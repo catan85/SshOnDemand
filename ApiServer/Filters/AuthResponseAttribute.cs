@@ -33,6 +33,9 @@ namespace ApiServer.Filters
                 bool fault = false;
                 DataTable clientsTable = PostgreSQLClass.GetClientsDatatable(out fault);
 
+                if (fault)
+                    throw new Exception("Cannot read clients table");
+
                 foreach (DataRow row in clientsTable.Rows)
                 {
                     allowedApps.Add((string)row["client_name"], (string)row["client_key"]);
