@@ -61,9 +61,36 @@ namespace DeviceClient
             return null;
         }
 
-        public void SetActiveDeviceConnection()
+        public async Task SetActiveDeviceConnection()
         {
+            string state = await SetActiveDeviceConnection(client);
 
+            Console.WriteLine(state);
+        }
+
+        private async Task<string> SetActiveDeviceConnection(HttpClient client)
+        {
+            HttpResponseMessage response = null;
+
+            response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceSetConnectionState", ClientConnectionState.Connected);
+
+            if (response.IsSuccessStatusCode)
+            {
+                bool authenticated = HMACResponseAuthentication.IsResponseAuthenticated(response);
+                if (authenticated)
+                {
+                    string responseString = await response.Content.ReadAsStringAsync();
+                    return responseString;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Failed to call the API. HTTP Status: {0}, Reason {1}", response.StatusCode, response.ReasonPhrase);
+                string responseString = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(responseString);
+            }
+
+            return null;
         }
 
         public void ResetActiveDeviceConnection()

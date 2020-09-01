@@ -16,16 +16,25 @@ namespace DeviceClient
             while (true)
             {
 
-                DeviceConnectionStatus requestStatus = await http.CheckRemoteConnectionRequest();
+                DeviceConnectionStatus connectionDetails = await http.CheckRemoteConnectionRequest();
 
-                if (requestStatus != null && (requestStatus.State == ClientConnectionState.Ready) && ssh.ConnectionState == SshConnectionState.Closed)
+                if (connectionDetails != null && (connectionDetails.State == ClientConnectionState.Ready) && ssh.ConnectionState == SshConnectionState.Closed)
                 {
-                    ssh.OpenSshConnection();
-                    http.SetActiveDeviceConnection();
+                    ssh.OpenSshConnection(connectionDetails);
                 }
-                else if (requestStatus == null && ssh.ConnectionState == SshConnectionState.Open)
+                else if (connectionDetails == null && ssh.ConnectionState == SshConnectionState.Open)
                 {
                     ssh.CloseSshConnection();
+                }
+
+                // Connection status is beign constantly setted beacuse the server constantly check the last timestamp 
+                // If the client goes offline, the server will mark the device as not connected automatically
+                if (ssh.ConnectionState == SshConnectionState.Open)
+                {
+                    await http.SetActiveDeviceConnection();
+                }
+                else
+                {
                     http.ResetActiveDeviceConnection();
                 }
 

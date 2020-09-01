@@ -10,7 +10,7 @@ namespace DeviceClient
 
         public SshConnectionState ConnectionState = SshConnectionState.Closed;
 
-        public void OpenSshConnection()
+        public void OpenSshConnection(DeviceConnectionStatus connectionDetails)
         {
             Console.WriteLine("Connection Opened");
             ConnectionState = SshConnectionState.Open;
