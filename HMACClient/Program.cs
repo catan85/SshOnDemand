@@ -15,6 +15,8 @@ namespace HMACClient
     {
 
         private static readonly UInt64 requestMaxAgeInSeconds = 300; //Means 5 min
+        private static string apiBaseAddress = "https://localhost:5001/";
+
         static void Main(string[] args)
         {
             RunAsync().Wait();
@@ -23,13 +25,8 @@ namespace HMACClient
 
         static async Task RunAsync()
         {
-
             Console.WriteLine("Calling the back-end API");
 
-            //Need to change the port number
-            //provide the port number where your api is running
-            string apiBaseAddress = "https://localhost:5001/";
-            //string apiBaseAddress = "http://localhost:53960/";
             HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler();
 
             HttpClient client = HttpClientFactory.Create(customDelegatingHandler);
@@ -56,51 +53,33 @@ namespace HMACClient
 
                 if (key == ConsoleKey.S)
                 {
-                    Console.WriteLine("Test della chiamata a get, metodo secret, è un metodo di test per lo sviluppo del meccanismo");
-                    response = await client.GetAsync(apiBaseAddress + "secret");
+                    response = await TestProtocol(client);
                 }
 
                 else if (key == ConsoleKey.P)
                 {
-                    Console.WriteLine("Test di una richiesta di connessione da parte dello sviluppatore, NON VALIDA (device name inesistente)");
-                    DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
-                    args.DeveloperSshPublicKey = "abcde";
-                    args.DeviceName = "blabla";
-
-                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
+                    response = await DeveloperConnectionRequest_FAIL(client);
                 }
-       
+
                 else if (key == ConsoleKey.O)
                 {
-                    Console.WriteLine("Test di inserimento di una richiesta di connessione da parte dello sviluppatore, VALIDA");
-
-                    DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
-                    args.DeveloperSshPublicKey = "abcde";
-                    args.DeviceName = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
-
-                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
+                    response = await DeveloperConnectionRequest_DONE(client);
                 }
 
                 else if (key == ConsoleKey.I)
                 {
-                    Console.WriteLine("Test di lettura stato connessione del device da parte dello sviluppatore, VALIDA");
-                    string deviceName = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
-
-                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperCheckDeviceConnection", deviceName);
+                    response = await DeveloperCheckDeviceConnectionState(client);
                 }
 
                 else if (key == ConsoleKey.Q)
                 {
-                    Console.WriteLine("Test di verifica richieste di connessione da parte del device, VALIDA");
-                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceCheckRemoteConnectionRequest", "dev pub ssh key");
+                    response = await DeviceCheckConnectionRequest(client);
                 }
 
                 else if (key == ConsoleKey.W)
                 {
-                    Console.WriteLine("Imposta stato di connessione del client ATTIVO");
-                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceSetConnectionState", ClientConnectionState.Connected );
+                    response = await DeviceSetActiveConnectionStatus(client);
                 }
-
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -122,9 +101,52 @@ namespace HMACClient
                 Console.WriteLine("-----------------------------------------------------------");
 
             }
-           
+
         }
 
+        private static async Task<HttpResponseMessage> TestProtocol(HttpClient client)
+        {
+            Console.WriteLine("Test della chiamata a get, metodo secret, è un metodo di test per lo sviluppo del meccanismo");
+            return await client.GetAsync(apiBaseAddress + "secret");
+        }
+
+        private static async Task<HttpResponseMessage> DeveloperConnectionRequest_FAIL(HttpClient client)
+        {
+            Console.WriteLine("Test di una richiesta di connessione da parte dello sviluppatore, NON VALIDA (device name inesistente)");
+            DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
+            args.DeveloperSshPublicKey = "abcde";
+            args.DeviceName = "blabla";
+
+            return await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
+        }
+        private static async Task<HttpResponseMessage> DeveloperConnectionRequest_DONE(HttpClient client)
+        {
+            Console.WriteLine("Test di inserimento di una richiesta di connessione da parte dello sviluppatore, VALIDA");
+            DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
+            args.DeveloperSshPublicKey = "abcde";
+            args.DeviceName = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
+            return await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
+        }
+
+        private static async Task<HttpResponseMessage> DeveloperCheckDeviceConnectionState(HttpClient client)
+        {
+            Console.WriteLine("Test di lettura stato connessione del device da parte dello sviluppatore, VALIDA");
+            string deviceName = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
+
+            return await client.PostAsJsonAsync(apiBaseAddress + "DeveloperCheckDeviceConnection", deviceName);
+        }
+
+        private static async Task<HttpResponseMessage> DeviceCheckConnectionRequest(HttpClient client)
+        {
+            Console.WriteLine("Test di verifica richieste di connessione da parte del device, VALIDA");
+            return await client.PostAsJsonAsync(apiBaseAddress + "DeviceCheckRemoteConnectionRequest", "dev pub ssh key");
+        }
+
+        private static async Task<HttpResponseMessage> DeviceSetActiveConnectionStatus(HttpClient client)
+        {
+            Console.WriteLine("Imposta stato di connessione del client ATTIVO");
+            return await client.PostAsJsonAsync(apiBaseAddress + "DeviceSetConnectionState", ClientConnectionState.Connected);
+        }
 
         private static bool CheckResponseAuthentication(HttpResponseMessage response)
         {
