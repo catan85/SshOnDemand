@@ -14,7 +14,7 @@ namespace ApiServer
     using System.Text;
     using System.Configuration;
     using System.Linq;
-    using SshOnDemandEntities;
+    using SshOnDemandLibs;
 
     /// <summary>
     /// Classe di interfacciamento con database Postgresql

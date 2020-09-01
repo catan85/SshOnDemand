@@ -7,9 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratorAppIdAppKey", "Gen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiServer", "ApiServer\ApiServer.csproj", "{2354933B-6F73-4271-8614-ECC396DEF218}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SshOnDemandEntities", "SshOnDemandEntities\SshOnDemandEntities.csproj", "{747D3010-A21E-4910-A65B-F759DD38D42B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HmacTestClient", "HmacTestClient\HmacTestClient.csproj", "{CD388200-491A-44A3-A26F-5AEA0119E3AE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceClient", "DeviceClient\DeviceClient.csproj", "{90BEF6AB-B0CF-4EF0-A693-B1F4A79C5B45}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeveloperClient", "DeveloperClient\DeveloperClient.csproj", "{FB3F0B56-6E45-49A0-B176-ED3DB8AFF0EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SshOnDemandLibs", "SshOnDemandLibs\SshOnDemandLibs.csproj", "{10245E73-1A2D-48C6-8AA5-3784A16F6BF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +29,22 @@ Global
 		{2354933B-6F73-4271-8614-ECC396DEF218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2354933B-6F73-4271-8614-ECC396DEF218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2354933B-6F73-4271-8614-ECC396DEF218}.Release|Any CPU.Build.0 = Release|Any CPU
-		{747D3010-A21E-4910-A65B-F759DD38D42B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{747D3010-A21E-4910-A65B-F759DD38D42B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{747D3010-A21E-4910-A65B-F759DD38D42B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{747D3010-A21E-4910-A65B-F759DD38D42B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90BEF6AB-B0CF-4EF0-A693-B1F4A79C5B45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90BEF6AB-B0CF-4EF0-A693-B1F4A79C5B45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90BEF6AB-B0CF-4EF0-A693-B1F4A79C5B45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90BEF6AB-B0CF-4EF0-A693-B1F4A79C5B45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB3F0B56-6E45-49A0-B176-ED3DB8AFF0EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB3F0B56-6E45-49A0-B176-ED3DB8AFF0EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB3F0B56-6E45-49A0-B176-ED3DB8AFF0EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB3F0B56-6E45-49A0-B176-ED3DB8AFF0EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10245E73-1A2D-48C6-8AA5-3784A16F6BF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10245E73-1A2D-48C6-8AA5-3784A16F6BF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10245E73-1A2D-48C6-8AA5-3784A16F6BF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10245E73-1A2D-48C6-8AA5-3784A16F6BF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

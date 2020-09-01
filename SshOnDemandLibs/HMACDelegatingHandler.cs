@@ -6,7 +6,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-namespace HmacTestClient
+
+namespace SshOnDemandLibs
 {
     public class HMACDelegatingHandler : DelegatingHandler
     {

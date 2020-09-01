@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SshOnDemandEntities
+namespace SshOnDemandLibs
 {
     public class DeveloperDeviceConnectionRequestArgs
     {

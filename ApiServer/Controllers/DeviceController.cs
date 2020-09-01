@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ApiServer.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SshOnDemandEntities;
+using SshOnDemandLibs;
 
 namespace ApiServer.Controllers
 {
