@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SshOnDemandEntities\SshOnDemandLibs.csproj" />
+    <ProjectReference Include="..\SshOnDemandLibs\SshOnDemandLibs.csproj" />
   </ItemGroup>
 
 </Project>
