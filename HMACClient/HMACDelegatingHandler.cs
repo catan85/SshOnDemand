@@ -12,8 +12,8 @@ namespace HMACClient
     {
         // First obtained the APP ID and API Key from the server
         // The APIKey MUST be stored securely in db or in the App.Config
-        public static string APPId = "378ce77c-5b45-4126-9dfa-0371daa51563";
-        public static string APIKey = "anI4ICTj9bs+gNQRa3aBbbQmsYCGvNIKB1qTkWZoj/k=";
+        public static string APPId = "";
+        public static string APIKey = "";
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

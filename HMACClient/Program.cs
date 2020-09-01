@@ -39,36 +39,60 @@ namespace HMACClient
 
             while (true)
             {
-                // Test della chiamata a get, metodo secret, è un metodo di test per lo sviluppo del meccanismo
+                // azioni developer usano un'api key developer
+                if (key == ConsoleKey.S || key == ConsoleKey.P || key == ConsoleKey.O || key == ConsoleKey.I)
+                {
+                    HMACDelegatingHandler.APPId = "378ce77c-5b45-4126-9dfa-0371daa51563";
+                    HMACDelegatingHandler.APIKey = "anI4ICTj9bs+gNQRa3aBbbQmsYCGvNIKB1qTkWZoj/k=";
+                }
+
+                if (key == ConsoleKey.Q || key == ConsoleKey.W || key == ConsoleKey.E)
+                {
+                    // azioni del device usano un'api key device
+                    HMACDelegatingHandler.APPId = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
+                    HMACDelegatingHandler.APIKey = "U8a2xaaYz2sNhEGDO9T4Ms9Wf4AWMQv+gDpmYJx+YmI=";
+                }
+
+
                 if (key == ConsoleKey.S)
                 {
+                    Console.WriteLine("Test della chiamata a get, metodo secret, è un metodo di test per lo sviluppo del meccanismo");
                     response = await client.GetAsync(apiBaseAddress + "secret");
                 }
 
-                // Test di una richiesta di connessione da parte dello sviluppatore, NON VALIDA
                 else if (key == ConsoleKey.P)
                 {
+                    Console.WriteLine("Test di una richiesta di connessione da parte dello sviluppatore, NON VALIDA (device name inesistente)");
                     DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
-                    args.DeveloperPublicKey = "abcde";
+                    args.DeveloperSshPublicKey = "abcde";
                     args.DeviceName = "blabla";
 
                     response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
                 }
-                // Test di una richiesta di connessione da parte dello sviluppatore, VALIDA
+       
                 else if (key == ConsoleKey.O)
                 {
+                    Console.WriteLine("Test di inserimento di una richiesta di connessione da parte dello sviluppatore, VALIDA");
+
                     DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
-                    args.DeveloperPublicKey = "abcde";
+                    args.DeveloperSshPublicKey = "abcde";
                     args.DeviceName = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
 
                     response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
                 }
-                // Test di una richiesta di stato connessione del device da parte dello sviluppatore, VALIDA
+
                 else if (key == ConsoleKey.I)
                 {
+                    Console.WriteLine("Test di lettura stato connessione del device da parte dello sviluppatore, VALIDA");
                     string deviceName = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
 
                     response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperCheckDeviceConnection", deviceName);
+                }
+
+                else if (key == ConsoleKey.Q)
+                {
+                    Console.WriteLine("Test di verifica richieste di connessione da parte del device, VALIDA");
+                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceCheckRemoteConnectionRequest", "dev pub ssh key");
                 }
 
 
@@ -84,9 +108,12 @@ namespace HMACClient
                 else
                 {
                     Console.WriteLine("Failed to call the API. HTTP Status: {0}, Reason {1}", response.StatusCode, response.ReasonPhrase);
+                    string responseString = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(responseString);
                 }
 
-                key = Console.ReadKey().Key;
+                key = Console.ReadKey(true).Key;
+                Console.WriteLine("-----------------------------------------------------------");
 
             }
            

@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
+
 namespace SshOnDemandEntities
 {
     [Serializable]
     public class DeviceConnectionStatus
     {
-        public short Status { get; set; }
+        public ClientConnectionState State { get; set; }
 
         public string SshHost { get; set; }
 

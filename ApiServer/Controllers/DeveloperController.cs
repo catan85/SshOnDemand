@@ -13,13 +13,6 @@ namespace ApiServer.Controllers
 
     public class DeveloperController : ControllerBase
     {
-        [AuthRequestAttribute]
-        [AuthResponseAttribute]
-        [HttpGet(template: "DeveloperAuth")]
-        public IActionResult DeveloperAuth()
-        {
-            return Ok("You're authenticated");
-        }
 
         [AuthRequestAttribute]
         [AuthResponseAttribute]
@@ -37,7 +30,7 @@ namespace ApiServer.Controllers
             if (isDeveloperAuthorized && !fault)
             {
                 // Saving Developer public key to allow its connection to the ssh server
-                KeysGeneration.SaveKeys(developerIdentity, args.DeveloperPublicKey);
+                KeysGeneration.SaveKeys(developerIdentity, args.DeveloperSshPublicKey);
 
                 // Inserting device connection request
                 PostgreSQLClass.InsertDeviceConnectionRequest(args.DeviceName, true, out fault);

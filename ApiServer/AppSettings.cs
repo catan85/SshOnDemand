@@ -22,5 +22,10 @@ namespace ApiServer
 
         public static string DbPass { get; set; }
 
+        public static string SshHost { get; set; }
+
+        public static int SshPort { get; set; }
+
+        public static int SshFirstPort { get; set; }
     }
 }

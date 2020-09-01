@@ -26,6 +26,7 @@ namespace ApiServer
         private static int commandTimeout = 60;
         private static NpgsqlConnection DbConnection;
 
+        #region common
         public static DataTable GetClientsDatatable(out bool fault)
         {
             string query =
@@ -38,8 +39,111 @@ namespace ApiServer
             return GetDatatable(query, tablename, out fault);
         }
 
+        public static DeviceConnectionStatus CheckDeviceConnection(string deviceName, out bool fault)
+        {
+            DeviceConnectionStatus status = new DeviceConnectionStatus();
+            status.State = ClientConnectionState.Disconnected;
+
+            string query = $@"SELECT status, ssh_ip, ssh_port, ssh_forwarding FROM client_connections
+                            JOIN clients 
+                            ON client_connections.client_id = clients.id
+                            WHERE clients.client_name = '{deviceName}';";
+            DataTable data = GetDatatable(query, "connections", out fault);
+
+            if (data.Rows.Count == 1)
+            {
+                status.State = (ClientConnectionState)((short)data.Rows[0]["status"]);
+                status.SshHost = (string)data.Rows[0]["ssh_ip"];
+                status.SshPort = (int)data.Rows[0]["ssh_port"];
+                status.SshForwarding = (int)data.Rows[0]["ssh_forwarding"];
+            }
+            return status;
+        }
+        #endregion
+
+        #region device queries
+        public static bool IsDeviceConnectionAuthorized(string deviceName, out bool fault)
+        {
+            string query = $@"select true from clients where client_name = '{deviceName}';";
+
+            DataTable dt = GetDatatable(query, "developer_authorizations", out fault);
+
+            if (dt.Rows.Count == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
 
+        public static bool IsDeviceConnectionRequested(string deviceName, out bool fault)
+        {
+            string query = $@"select is_requested from device_requests
+                            join clients on clients.id = device_requests.client_id
+                            where clients.client_name = '{deviceName}';";
+
+            DataTable dt = GetDatatable(query, "client_requests", out fault);
+
+            if (dt.Rows.Count == 1)
+            {
+                return (bool)dt.Rows[0]["is_requested"];
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static void SetDeviceConnectionDetails(string deviceName, DeviceConnectionStatus status, out bool fault)
+        {
+            string query = $@" BEGIN;
+								INSERT INTO client_connections (client_id, status, connection_timestamp, ssh_ip, ssh_port, ssh_forwarding ) 
+                                SELECT clients.id, { (short)status.State }, '{CurrentTimestampString()}', '{status.SshHost}', {status.SshPort}, {status.SshForwarding}
+                                FROM clients where client_name = '{deviceName}'
+                                AND NOT EXISTS ( select true from device_requests where client_id = clients.id );
+
+                                UPDATE client_connections SET 
+                                    client_id = clients.id, 
+                                    status = { (short)status.State },
+                                    connection_timestamp = '{CurrentTimestampString()}', 
+                                    ssh_ip = '{ status.SshHost}', 
+                                    ssh_port = '{ status.SshPort}',
+                                    ssh_forwarding = '{status.SshForwarding}'
+                                FROM clients where client_name = '{deviceName}'
+                                    and client_id = clients.id;
+                                COMMIT;
+                            ";
+            QueryDatabase(query, out fault);
+        }
+
+        public static void SetDeviceConnectionState(string deviceName, ClientConnectionState state, out bool fault)
+        {
+            string query = $@"UPDATE client_connections set status = {(int)state} where client_name = '{deviceName}';";
+            QueryDatabase(query, out fault);
+        }
+
+        public static int GetMaxForwardingPort(out bool fault)
+        {
+            string query = $@"SELECT MAX(ssh_forwarding) as maxfw from client_connections WHERE status != 0";
+            DataTable data = GetDatatable(query, "ports", out fault);
+
+            if (fault || data.Rows.Count == 0 || data.Rows[0][0] is System.DBNull)
+            {
+                return 0;
+            }
+            else
+            {
+                return (int)data.Rows[0]["maxfw"];
+            }
+
+        }
+
+        #endregion
+
+        #region developer queries
         public static bool IsDeveloperConnectionToDeviceAuthorized(string developerName, string deviceName, out bool fault)
         {
             string query = $@"select developers.client_name as developer_name , devices.client_name as device_name from developer_authorizations da 
@@ -79,27 +183,9 @@ namespace ApiServer
             QueryDatabase(query, out fault);
         }
 
-        public static DeviceConnectionStatus CheckDeviceConnection(string deviceName, out bool fault)
-        {
-            DeviceConnectionStatus status = new DeviceConnectionStatus();
-            status.Status = 0;
+        #endregion
 
-            string query = $@"SELECT status, ssh_ip, ssh_port, ssh_forwarding FROM client_connections
-                            JOIN clients 
-                            ON client_connections.client_id = clients.id
-                            WHERE clients.client_name = '{deviceName}';";
-            DataTable data = GetDatatable(query, "connections", out fault);
-
-            if (data.Rows.Count == 1)
-            {
-                status.Status = (short)data.Rows[0]["status"];
-                status.SshHost = (string)data.Rows[0]["ssh_ip"];
-                status.SshPort = (int)data.Rows[0]["ssh_port"];
-                status.SshForwarding = (int)data.Rows[0]["ssh_forwarding"];
-            }
-            return status;
-        }
-
+        #region cyclic checks
         public static void DeactivateOldRequests(int maxRequestAgeInSeconds, out bool fault)
         {
             string timeLimit = (DateTime.UtcNow - new TimeSpan(0, 0, maxRequestAgeInSeconds)).ToString(Constants.DATETIME_FORMAT_STRING);
@@ -113,6 +199,8 @@ namespace ApiServer
             string query = $"update client_connections set status = 0 where connection_timestamp < '{timeLimit}' and status != 0;";
             QueryDatabase(query, out fault);
         }
+
+        #endregion
 
         private static string CurrentTimestampString()
         {
@@ -208,12 +296,13 @@ namespace ApiServer
                             table = tempTab;
                         }
                     }
-
+                    /*
                     if (table.PrimaryKey != null && setPrimaryKey && table.Columns.Count > 0)
                     {
                         table.PrimaryKey =
                             new DataColumn[] { table.Columns[0] };
                     }
+                    */
                 }
             }
         }
