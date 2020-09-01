@@ -7,7 +7,7 @@ using System.Configuration;
 using System.Threading.Tasks;
 
 
-namespace DeviceClient
+namespace DeveloperClient
 {
     class HttpCaller
     {
@@ -24,19 +24,57 @@ namespace DeviceClient
             
         }
 
-        public async Task<DeviceConnectionStatus> CheckRemoteConnectionRequest()
+
+
+        public async Task InsertConnectionRequest(string sshPublicKey)
         {
-            DeviceConnectionStatus state = await DeviceCheckConnectionRequest(client);
+            string state = await DeveloperConnectionRequest(client, sshPublicKey);
+            Console.WriteLine(state);
+        }
+
+
+        private async Task<string> DeveloperConnectionRequest(HttpClient client, string sshPublicKey)
+        {
+            HttpResponseMessage response = null;
+
+            DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
+            args.DeveloperSshPublicKey = sshPublicKey;
+            args.DeviceName = ConfigurationManager.AppSettings["TargetDevice"];
+
+            response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
+
+            if (response.IsSuccessStatusCode)
+            {
+                bool authenticated = HMACResponseAuthentication.IsResponseAuthenticated(response);
+                if (authenticated)
+                {
+                    string responseString = await response.Content.ReadAsStringAsync();
+                    return responseString;
+                }
+            }
+            else
+            {
+                await PrintFailMessage(response);
+            }
+
+            return null;
+        }
+
+        public async Task<DeviceConnectionStatus> CheckDeviceConnectionState()
+        {
+            DeviceConnectionStatus state = await DeveloperCheckDeviceConnectionState(client);
 
             return state;
         }
 
 
-        private async Task<DeviceConnectionStatus> DeviceCheckConnectionRequest(HttpClient client)
+        private async Task<DeviceConnectionStatus> DeveloperCheckDeviceConnectionState(HttpClient client)
         {
             HttpResponseMessage response = null;
-            Console.WriteLine("Checking for device connection request..");
-            response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceCheckRemoteConnectionRequest", "dev pub ssh key");
+
+            string deviceName = ConfigurationManager.AppSettings["TargetDevice"];
+
+            response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperCheckDeviceConnection", deviceName);
 
             if (response.IsSuccessStatusCode)
             {
@@ -59,49 +97,11 @@ namespace DeviceClient
             return null;
         }
 
-        public async Task SetActiveDeviceConnection()
-        {
-            string state = await SetDeviceConnection(client, ClientConnectionState.Connected);
-            Console.WriteLine(state);
-        }
-
-        public async Task ResetActiveDeviceConnection()
-        {
-            string state = await SetDeviceConnection(client, ClientConnectionState.Disconnected);
-            Console.WriteLine(state);
-        }
-
-
-        private async Task<string> SetDeviceConnection(HttpClient client, ClientConnectionState connectionState)
-        {
-            HttpResponseMessage response = null;
-
-            response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceSetConnectionState", connectionState);
-
-            if (response.IsSuccessStatusCode)
-            {
-                bool authenticated = HMACResponseAuthentication.IsResponseAuthenticated(response);
-                if (authenticated)
-                {
-                    string responseString = await response.Content.ReadAsStringAsync();
-                    return responseString;
-                }
-            }
-            else
-            {
-                await PrintFailMessage(response);
-            }
-
-            return null;
-        }
-
-
         private async Task PrintFailMessage(HttpResponseMessage response)
         {
             Console.WriteLine("Failed to call the API. HTTP Status: {0}, Reason {1}", response.StatusCode, response.ReasonPhrase);
             string responseString = await response.Content.ReadAsStringAsync();
             Console.WriteLine(responseString);
         }
-
     }
 }

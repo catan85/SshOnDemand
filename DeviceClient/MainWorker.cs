@@ -20,7 +20,7 @@ namespace DeviceClient
 
                 if (connectionDetails != null && (connectionDetails.State == ClientConnectionState.Ready) && ssh.ConnectionState == SshConnectionState.Closed)
                 {
-                    ssh.OpenSshConnection(connectionDetails);
+                    ssh.OpenSshConnectionLocallyForwarded(connectionDetails);
                 }
                 else if (connectionDetails == null && ssh.ConnectionState == SshConnectionState.Open)
                 {
@@ -35,7 +35,7 @@ namespace DeviceClient
                 }
                 else
                 {
-                    http.ResetActiveDeviceConnection();
+                    await http.ResetActiveDeviceConnection();
                 }
 
 
