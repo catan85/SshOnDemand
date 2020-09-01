@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-namespace HMACClient
+namespace HmacTestClient
 {
     public class HMACDelegatingHandler : DelegatingHandler
     {

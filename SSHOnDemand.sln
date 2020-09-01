@@ -5,11 +5,11 @@ VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratorAppIdAppKey", "GeneratorAppIdAppKey\GeneratorAppIdAppKey.csproj", "{5799C71D-092F-4B69-BFD7-82910E48440F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HMACClient", "HMACClient\HMACClient.csproj", "{BBC044C5-8156-4EF2-A31A-991BD9A53A57}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiServer", "ApiServer\ApiServer.csproj", "{2354933B-6F73-4271-8614-ECC396DEF218}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SshOnDemandEntities", "SshOnDemandEntities\SshOnDemandEntities.csproj", "{747D3010-A21E-4910-A65B-F759DD38D42B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SshOnDemandEntities", "SshOnDemandEntities\SshOnDemandEntities.csproj", "{747D3010-A21E-4910-A65B-F759DD38D42B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HmacTestClient", "HmacTestClient\HmacTestClient.csproj", "{CD388200-491A-44A3-A26F-5AEA0119E3AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +21,6 @@ Global
 		{5799C71D-092F-4B69-BFD7-82910E48440F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5799C71D-092F-4B69-BFD7-82910E48440F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5799C71D-092F-4B69-BFD7-82910E48440F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BBC044C5-8156-4EF2-A31A-991BD9A53A57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BBC044C5-8156-4EF2-A31A-991BD9A53A57}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BBC044C5-8156-4EF2-A31A-991BD9A53A57}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BBC044C5-8156-4EF2-A31A-991BD9A53A57}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2354933B-6F73-4271-8614-ECC396DEF218}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2354933B-6F73-4271-8614-ECC396DEF218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2354933B-6F73-4271-8614-ECC396DEF218}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +29,10 @@ Global
 		{747D3010-A21E-4910-A65B-F759DD38D42B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{747D3010-A21E-4910-A65B-F759DD38D42B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{747D3010-A21E-4910-A65B-F759DD38D42B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

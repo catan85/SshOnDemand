@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Web;
 using SshOnDemandEntities;
 
-namespace HMACClient
+namespace HmacTestClient
 {
     class Program
     {
