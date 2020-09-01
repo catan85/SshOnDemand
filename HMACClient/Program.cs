@@ -95,6 +95,12 @@ namespace HMACClient
                     response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceCheckRemoteConnectionRequest", "dev pub ssh key");
                 }
 
+                else if (key == ConsoleKey.W)
+                {
+                    Console.WriteLine("Imposta stato di connessione del client ATTIVO");
+                    response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceSetConnectionState", ClientConnectionState.Connected );
+                }
+
 
                 if (response.IsSuccessStatusCode)
                 {

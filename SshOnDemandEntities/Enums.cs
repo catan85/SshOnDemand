@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 namespace SshOnDemandEntities
 {
 
-    public enum ClientConnectionState { Disconnected = 0, Connected = 1 };
+    public enum ClientConnectionState { Disconnected = 0, Ready = 1, Connected = 2 };
     
 }

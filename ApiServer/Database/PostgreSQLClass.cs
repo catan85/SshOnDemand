@@ -121,24 +121,31 @@ namespace ApiServer
 
         public static void SetDeviceConnectionState(string deviceName, ClientConnectionState state, out bool fault)
         {
-            string query = $@"UPDATE client_connections set status = {(int)state} where client_name = '{deviceName}';";
+            string query = $@"UPDATE client_connections 
+                                SET 
+                                        status = {(int)state},
+                                        connection_timestamp = '{CurrentTimestampString()}'
+                            FROM 
+                                clients where clients.client_name = '{deviceName}' and client_connections.client_id = clients.id ;";
             QueryDatabase(query, out fault);
         }
 
-        public static int GetMaxForwardingPort(out bool fault)
+        public static List<int> GetForwardingPorts(out bool fault)
         {
-            string query = $@"SELECT MAX(ssh_forwarding) as maxfw from client_connections WHERE status != 0";
+            string query = $@"SELECT ssh_forwarding from client_connections WHERE status != 0";
             DataTable data = GetDatatable(query, "ports", out fault);
 
-            if (fault || data.Rows.Count == 0 || data.Rows[0][0] is System.DBNull)
+            List<int> result = new List<int>();
+
+            if (!fault && data.Rows.Count > 0 )
             {
-                return 0;
-            }
-            else
-            {
-                return (int)data.Rows[0]["maxfw"];
+                foreach (DataRow row in data.Rows)
+                {
+                    result.Add((int)row["ssh_forwarding"]);
+                }
             }
 
+            return result;
         }
 
         #endregion

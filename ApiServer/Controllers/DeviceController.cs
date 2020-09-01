@@ -61,13 +61,11 @@ namespace ApiServer.Controllers
 
         [AuthRequestAttribute]
         [AuthResponseAttribute]
-        [HttpPost(template: "DeviceSetConnectionStatus")]
-        public IActionResult DeviceSetConnectionStatus([FromBody] ClientConnectionState deviceConnectionState)
+        [HttpPost(template: "DeviceSetConnectionState")]
+        public IActionResult DeviceSetConnectionState([FromBody] ClientConnectionState deviceConnectionState)
         {
             bool fault = false;
             string deviceIdentity = (string)HttpContext.Items["ClientName"];
-
-
 
             PostgreSQLClass.SetDeviceConnectionState(deviceIdentity, deviceConnectionState, out fault);
 
@@ -92,19 +90,19 @@ namespace ApiServer.Controllers
             DeviceConnectionStatus deviceConnectionDetails = new DeviceConnectionStatus();
             deviceConnectionDetails.SshHost = AppSettings.SshHost;
             deviceConnectionDetails.SshPort = AppSettings.SshPort;
-            deviceConnectionDetails.State = ClientConnectionState.Disconnected;
+            deviceConnectionDetails.State = ClientConnectionState.Ready;
 
-            int maxForwardingPort = PostgreSQLClass.GetMaxForwardingPort(out fault);
+            List<int> usedPorts = PostgreSQLClass.GetForwardingPorts(out fault);
 
             if (!fault)
             {
-                if (maxForwardingPort == 0)
+                for (int i = AppSettings.SshFirstPort; i < AppSettings.SshFirstPort + 1000; i++ )
                 {
-                    deviceConnectionDetails.SshForwarding = AppSettings.SshFirstPort;
-                }
-                else
-                {
-                    deviceConnectionDetails.SshForwarding = maxForwardingPort + 1;
+                    if (!usedPorts.Contains(i))
+                    {
+                        deviceConnectionDetails.SshForwarding = i;
+                        break;
+                    }
                 }
 
                 return deviceConnectionDetails;
