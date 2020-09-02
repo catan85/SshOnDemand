@@ -21,18 +21,18 @@ namespace DeveloperClient
 
                 // Check device connection state to the ssh server
                 DeviceConnectionStatus deviceConnectionDetails = await http.CheckDeviceConnectionState();
-
-                if (deviceConnectionDetails.State != ClientConnectionState.Connected)
+                if(deviceConnectionDetails != null)
                 {
-                    Console.WriteLine("Waiting for device connection..");
+                    if (deviceConnectionDetails.State != ClientConnectionState.Connected)
+                    {
+                        Console.WriteLine("Waiting for device connection..");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Device has been connected, connecting developer to the ssh server..");
+                        ssh.OpenSshConnectionRemotelyForwarded(deviceConnectionDetails);
+                    }
                 }
-                else
-                {
-                    Console.WriteLine("Device has been connected, connecting developer to the ssh server..");
-                    ssh.OpenSshConnectionRemotelyForwarded(deviceConnectionDetails);
-                }
-
-
                 System.Threading.Thread.Sleep(5000);
             }
         }

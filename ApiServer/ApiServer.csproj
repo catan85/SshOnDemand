@@ -17,4 +17,10 @@
     <ProjectReference Include="..\SshOnDemandLibs\SshOnDemandLibs.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
