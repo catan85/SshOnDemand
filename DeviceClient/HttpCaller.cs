@@ -24,19 +24,19 @@ namespace DeviceClient
             
         }
 
-        public async Task<DeviceConnectionStatus> CheckRemoteConnectionRequest()
+        public async Task<DeviceConnectionStatus> CheckRemoteConnectionRequest(string publicKey)
         {
-            DeviceConnectionStatus state = await DeviceCheckConnectionRequest(client);
+            DeviceConnectionStatus state = await DeviceCheckConnectionRequest(client, publicKey);
 
             return state;
         }
 
 
-        private async Task<DeviceConnectionStatus> DeviceCheckConnectionRequest(HttpClient client)
+        private async Task<DeviceConnectionStatus> DeviceCheckConnectionRequest(HttpClient client, string publicKey)
         {
             HttpResponseMessage response = null;
             Console.WriteLine("Checking for device connection request..");
-            response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceCheckRemoteConnectionRequest", "dev pub ssh key");
+            response = await client.PostAsJsonAsync(apiBaseAddress + "DeviceCheckRemoteConnectionRequest",  publicKey);
 
             if (response.IsSuccessStatusCode)
             {

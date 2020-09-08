@@ -34,8 +34,9 @@ namespace ApiServer.Controllers
                 // Altrimenti devo fare in modo che venga attivata la nuova connessione
                 if (connectionStatus.State == ClientConnectionState.Disconnected)
                 {
+#warning inserire salvataggio chiavi via ssh
                     // Saving device public key to allow its connection to the ssh server
-                    KeysGeneration.SaveKeys(deviceIdentity, devicePublicKey);
+                    SshKeysManagement.SaveKeys("device_" + deviceIdentity, devicePublicKey, AppSettings.SshAuthorizedKeysFolder);
 
                     // Generating Ssh connection details
                     DeviceConnectionStatus connectionDetails = GenerateSshConnectionDetails();
@@ -89,6 +90,7 @@ namespace ApiServer.Controllers
             // Inserting device connection details
             DeviceConnectionStatus deviceConnectionDetails = new DeviceConnectionStatus();
             deviceConnectionDetails.SshHost = AppSettings.SshHost;
+            deviceConnectionDetails.SshUser = AppSettings.SshUser;
             deviceConnectionDetails.SshPort = AppSettings.SshPort;
             deviceConnectionDetails.State = ClientConnectionState.Ready;
 

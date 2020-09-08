@@ -9,13 +9,14 @@ namespace DeveloperClient
     class MainWorker
     {
         private HttpCaller http = new HttpCaller();
-        private SshClient ssh = new SshClient();
+        private SshHelper ssh = new SshHelper();
 
         public async Task Run()
         {
 
             while (true)
             {
+
                 // Insert connection request to the target device
                 await http.InsertConnectionRequest(ssh.PublicKey);
 
@@ -30,7 +31,8 @@ namespace DeveloperClient
                     else
                     {
                         Console.WriteLine("Device has been connected, connecting developer to the ssh server..");
-                        ssh.OpenSshConnectionRemotelyForwarded(deviceConnectionDetails);
+                        ssh.OpenSshConnection(deviceConnectionDetails);
+                        ssh.EnableLocalForwarding(deviceConnectionDetails);
                     }
                 }
                 System.Threading.Thread.Sleep(5000);

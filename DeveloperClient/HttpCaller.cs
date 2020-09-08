@@ -21,7 +21,6 @@ namespace DeveloperClient
             HMACDelegatingHandler.APIKey = ConfigurationManager.AppSettings["ClientKey"];
 
             client = HttpClientFactory.Create(customDelegatingHandler);
-            
         }
 
 

@@ -44,7 +44,7 @@ namespace ApiServer
             DeviceConnectionStatus status = new DeviceConnectionStatus();
             status.State = ClientConnectionState.Disconnected;
 
-            string query = $@"SELECT status, ssh_ip, ssh_port, ssh_forwarding FROM client_connections
+            string query = $@"SELECT status, ssh_ip, ssh_port, ssh_user, ssh_forwarding FROM client_connections
                             JOIN clients 
                             ON client_connections.client_id = clients.id
                             WHERE clients.client_name = '{deviceName}';";
@@ -56,6 +56,7 @@ namespace ApiServer
                 status.SshHost = (string)data.Rows[0]["ssh_ip"];
                 status.SshPort = (int)data.Rows[0]["ssh_port"];
                 status.SshForwarding = (int)data.Rows[0]["ssh_forwarding"];
+                status.SshUser = (string)data.Rows[0]["ssh_user"];
             }
             return status;
         }
@@ -101,7 +102,7 @@ namespace ApiServer
         {
             string query = $@" BEGIN;
 								INSERT INTO client_connections (client_id, status, connection_timestamp, ssh_ip, ssh_port, ssh_forwarding ) 
-                                SELECT clients.id, { (short)status.State }, '{CurrentTimestampString()}', '{status.SshHost}', {status.SshPort}, {status.SshForwarding}
+                                SELECT clients.id, { (short)status.State }, '{CurrentTimestampString()}', '{status.SshHost}', {status.SshPort}, '{status.SshUser}', {status.SshForwarding}
                                 FROM clients where client_name = '{deviceName}'
                                 AND NOT EXISTS ( select true from device_requests where client_id = clients.id );
 
@@ -111,6 +112,7 @@ namespace ApiServer
                                     connection_timestamp = '{CurrentTimestampString()}', 
                                     ssh_ip = '{ status.SshHost}', 
                                     ssh_port = '{ status.SshPort}',
+                                    ssh_user = '{ status.SshUser}',
                                     ssh_forwarding = '{status.SshForwarding}'
                                 FROM clients where client_name = '{deviceName}'
                                     and client_id = clients.id;

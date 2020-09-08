@@ -14,6 +14,8 @@ namespace SshOnDemandLibs
 
         public int SshPort { get; set; }
 
+        public string SshUser { get; set; }
+
         public int SshForwarding { get; set; }
     }
 }

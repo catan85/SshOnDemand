@@ -9,18 +9,19 @@ namespace DeviceClient
     class MainWorker
     {
         private HttpCaller http = new HttpCaller();
-        private SshClient ssh = new SshClient();
+        private SshHelper ssh = new SshHelper();
 
         public async Task Run()
         {
             while (true)
             {
 
-                DeviceConnectionStatus connectionDetails = await http.CheckRemoteConnectionRequest();
+                DeviceConnectionStatus connectionDetails = await http.CheckRemoteConnectionRequest(ssh.PublicKey);
 
                 if (connectionDetails != null && (connectionDetails.State == ClientConnectionState.Ready) && ssh.ConnectionState == SshConnectionState.Closed)
                 {
-                    ssh.OpenSshConnectionLocallyForwarded(connectionDetails);
+                    ssh.OpenSshConnection(connectionDetails);
+                    ssh.EnableRemoteForwarding(connectionDetails);
                 }
                 else if (connectionDetails == null && ssh.ConnectionState == SshConnectionState.Open)
                 {

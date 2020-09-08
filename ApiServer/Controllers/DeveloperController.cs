@@ -30,8 +30,8 @@ namespace ApiServer.Controllers
             if (isDeveloperAuthorized && !fault)
             {
                 // Saving Developer public key to allow its connection to the ssh server
-                KeysGeneration.SaveKeys(developerIdentity, args.DeveloperSshPublicKey);
-
+                SshKeysManagement.SaveKeys("developer_" + developerIdentity, args.DeveloperSshPublicKey, AppSettings.SshAuthorizedKeysFolder);
+#warning inserire salvataggio chiavi via SSH
                 // Inserting device connection request
                 PostgreSQLClass.InsertDeviceConnectionRequest(args.DeviceName, true, out fault);
                 return Ok("Request has been set");

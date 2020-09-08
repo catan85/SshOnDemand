@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ApiServer
+namespace SshOnDemandLibs
 {
     using System;
     using System.Diagnostics;
@@ -12,16 +12,16 @@ namespace ApiServer
 
     public static class ShellHelper
     {
-        public static string Bash(this string cmd)
+        public static string Bash(this string cmd, string operativeSystem)
         {
             var escapedArgs = cmd;
-            if (AppSettings.OS == "Linux")
+            if (operativeSystem == "Linux")
               escapedArgs = cmd.Replace("\"", "\\\"");
 
 
             var process = new Process();
 
-            if (AppSettings.OS == "Linux")
+            if (operativeSystem == "Linux")
             {
                 process.StartInfo = new ProcessStartInfo
                 {
