@@ -7,6 +7,7 @@ using ApiServer.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SshOnDemandLibs;
+using SshOnDemandLibs.Entities;
 
 namespace ApiServer.Controllers
 {
@@ -34,9 +35,10 @@ namespace ApiServer.Controllers
                 // Altrimenti devo fare in modo che venga attivata la nuova connessione
                 if (connectionStatus.State == ClientConnectionState.Disconnected)
                 {
-#warning inserire salvataggio chiavi via ssh
+
+                    SshConnectionData connectionData = CreateSshConnectionData();
                     // Saving device public key to allow its connection to the ssh server
-                    SshKeysManagement.SaveKeys("device_" + deviceIdentity, devicePublicKey, AppSettings.SshAuthorizedKeysFolder);
+                    SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "device_" + deviceIdentity, devicePublicKey, AppSettings.SshAuthorizedKeysPath);
 
                     // Generating Ssh connection details
                     DeviceConnectionStatus connectionDetails = GenerateSshConnectionDetails();
@@ -58,6 +60,17 @@ namespace ApiServer.Controllers
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "Database error");
             }
+        }
+
+        private SshConnectionData CreateSshConnectionData()
+        {
+            SshConnectionData connectionData = new SshConnectionData();
+            connectionData.AuthenticationMode = SshAuthMode.WithPassword;
+            connectionData.Host = AppSettings.SshHost;
+            connectionData.Port = AppSettings.SshPort;
+            connectionData.Username = AppSettings.SshUser;
+            connectionData.Password = AppSettings.SshPass;
+            return connectionData;
         }
 
         [AuthRequestAttribute]

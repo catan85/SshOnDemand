@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
 using SshOnDemandLibs.Entities;
+using SshOnDemandLibs.Ssh;
 
 namespace SshOnDemandLibs
 {
@@ -32,40 +33,32 @@ namespace SshOnDemandLibs
             return keys;
         }
 
-        public static void SaveKeys(string clientName, string publicKey, string publicKeyFolder)
+        public static void SaveKeys(SshConnectionData sftpConnectionData, string sshUsername, string clientName, string publicKey, string authorizedKeyPath)
         {
             // Inserire quì la connessione ssh e salvataggio della chiave pubblica sul server
             // Lo faccio tramite SSH, in questo modo è possibile tenere webserver e server ssh anche separati
-
-            #warning da implementare
+            SftpHelper sftp = new SftpHelper();
 
             // download authorized_keys
+            bool fileExists = false;
+            sftp.DownloadFile(sftpConnectionData, authorizedKeyPath, Constants.TEMP_AUTHORIZED_KEYS_FILENAME , out fileExists);
 
-            // modifica di authorized_keys
+            // aggiunta della nuova chiave ad authorized_keys
+            AddKeyToAuthorized(publicKey, clientName);
 
             // upload di authorized_keys
-
-            // aggiungi anche il nome del client in fondo alle public key, serve da commento ma anche per poi fare l'unload
-
-
-            using (StreamWriter sw = new StreamWriter("temp.pub"))
-            {
-                sw.Write(publicKey);
-            }
-
-            string copyCmd = "";
-            if (Environment.OSVersion.Platform == PlatformID.Unix ||
-                   Environment.OSVersion.Platform == PlatformID.MacOSX)
-            {
-                copyCmd = $"cp \"temp.pub\" \"{publicKeyFolder}\"/{clientName}.pub";
-            }
-            else
-            {
-                copyCmd = $"copy \"temp.pub\" \"{publicKeyFolder}\"\\{clientName}.pub";
-            }
-            var r = ShellHelper.Bash(copyCmd, operativeSystem);
+            sftp.UploadFile(sftpConnectionData, Constants.TEMP_AUTHORIZED_KEYS_FILENAME, authorizedKeyPath);
+            
         }
 
+
+        private static void AddKeyToAuthorized(string publicKey, string clientName)
+        {
+            using (StreamWriter sw = new StreamWriter(Constants.TEMP_AUTHORIZED_KEYS_FILENAME))
+            {
+                sw.Write(publicKey + " " + clientName);
+            }
+        }
 
         public static void UnloadKeys(string clientName) {
            #warning da implementare

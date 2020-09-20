@@ -7,6 +7,7 @@ using ApiServer.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SshOnDemandLibs;
+using SshOnDemandLibs.Entities;
 
 namespace ApiServer.Controllers
 {
@@ -29,9 +30,11 @@ namespace ApiServer.Controllers
 
             if (isDeveloperAuthorized && !fault)
             {
+                SshConnectionData connectionData = CreateSshConnectionData();
+                
                 // Saving Developer public key to allow its connection to the ssh server
-                SshKeysManagement.SaveKeys("developer_" + developerIdentity, args.DeveloperSshPublicKey, AppSettings.SshAuthorizedKeysFolder);
-#warning inserire salvataggio chiavi via SSH
+                SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "developer_" + developerIdentity, args.DeveloperSshPublicKey, AppSettings.SshAuthorizedKeysPath);
+
                 // Inserting device connection request
                 PostgreSQLClass.InsertDeviceConnectionRequest(args.DeviceName, true, out fault);
                 return Ok("Request has been set");
@@ -46,6 +49,16 @@ namespace ApiServer.Controllers
             }
         }
 
+        private SshConnectionData CreateSshConnectionData()
+        {
+            SshConnectionData connectionData = new SshConnectionData();
+            connectionData.AuthenticationMode = SshAuthMode.WithPassword;
+            connectionData.Host = AppSettings.SshHost;
+            connectionData.Port = AppSettings.SshPort;
+            connectionData.Username = AppSettings.SshUser;
+            connectionData.Password = AppSettings.SshPass;
+            return connectionData;
+        }
 
         [AuthRequestAttribute]
         [AuthResponseAttribute]

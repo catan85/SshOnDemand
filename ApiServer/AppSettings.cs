@@ -10,7 +10,7 @@ namespace ApiServer
         public static string OS { get; set; }
         public static string ApiKey { get; set; }
 
-        public static string SshAuthorizedKeysFolder { get; set; }
+        public static string SshAuthorizedKeysPath { get; set; }
 
         public static string DbHost { get; set; }
 
@@ -25,6 +25,8 @@ namespace ApiServer
         public static string SshHost { get; set; }
 
         public static string SshUser { get; set; }
+
+        public static string SshPass { get; set; }
 
         public static int SshPort { get; set; }
 
