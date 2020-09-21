@@ -101,7 +101,7 @@ namespace ApiServer
         public static void SetDeviceConnectionDetails(string deviceName, DeviceConnectionStatus status, out bool fault)
         {
             string query = $@" BEGIN;
-								INSERT INTO client_connections (client_id, status, connection_timestamp, ssh_ip, ssh_port, ssh_forwarding ) 
+								INSERT INTO client_connections (client_id, status, connection_timestamp, ssh_ip, ssh_port, ssh_user, ssh_forwarding )
                                 SELECT clients.id, { (short)status.State }, '{CurrentTimestampString()}', '{status.SshHost}', {status.SshPort}, '{status.SshUser}', {status.SshForwarding}
                                 FROM clients where client_name = '{deviceName}'
                                 AND NOT EXISTS ( select true from device_requests where client_id = clients.id );
@@ -224,11 +224,26 @@ namespace ApiServer
             }
         }
 
-        public static void ResetOldConnections(int maxConnectionAgeInSeconds, out bool fault)
+        public static void ResetOldConnections(int maxConnectionAgeInSeconds, out bool fault, out List<string> deactivatedClients)
         {
             string timeLimit = (DateTime.UtcNow - new TimeSpan(0, 0, maxConnectionAgeInSeconds)).ToString(Constants.DATETIME_FORMAT_STRING);
-            string query = $"update client_connections set status = 0 where connection_timestamp < '{timeLimit}' and status != 0;";
-            QueryDatabase(query, out fault);
+            string query = $@"                               
+                            update client_connections set status = 0 
+                            FROM clients 
+                            where connection_timestamp < '{timeLimit}' and status != 0 
+                            and clients.id = client_connections.client_id RETURNING clients.client_name;";
+
+            var data = GetDatatable(query, "updated_clients", out fault);
+
+            deactivatedClients = new List<string>();
+
+            if (!fault && data.Rows.Count > 0)
+            {
+                foreach (DataRow row in data.Rows)
+                {
+                    deactivatedClients.Add((string)row["client_name"]);
+                }
+            }
         }
 
         #endregion

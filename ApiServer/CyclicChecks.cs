@@ -44,7 +44,15 @@ namespace ApiServer
         private void CheckActiveDeviceConnections()
         {
             bool fault = false;
-            PostgreSQLClass.ResetOldConnections(15, out fault);
+            List<string> deactivatedClients = new List<string>();
+            PostgreSQLClass.ResetOldConnections(15, out fault, out deactivatedClients);
+
+            SshConnectionData connectionData = Utilities.CreateSshConnectionData();
+
+            foreach (string deactivatedClient in deactivatedClients)
+            {
+                SshKeysManagement.UnloadKey(connectionData, deactivatedClient, AppSettings.SshAuthorizedKeysPath);
+            }
         }
     }
 }
