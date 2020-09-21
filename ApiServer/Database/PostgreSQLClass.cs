@@ -172,20 +172,24 @@ namespace ApiServer
             }
         }
 
-        public static void InsertDeviceConnectionRequest(string deviceName, bool isRequest, out bool fault)
+        public static void InsertDeviceConnectionRequest(string deviceName,string developerName, bool isRequest, out bool fault)
         {
             string query =
                             $@" BEGIN;
-								INSERT INTO device_requests (client_id, is_requested, request_timestamp ) 
-                                SELECT clients.id, { (isRequest ? "true" : "false") }, '{CurrentTimestampString()}'
-                                FROM clients where client_name = '{deviceName}'
-                                AND NOT EXISTS ( select true from device_requests where client_id = clients.id );
+                                SELECT devices.id, requesters.id ,{ (isRequest ? "true" : "false") }, '{CurrentTimestampString()}'
+                                FROM clients as devices
+                                CROSS JOIN clients as requesters 
+                                WHERE devices.client_name = '{deviceName}' and requesters.client_name = '{developerName}'
+                                AND NOT EXISTS ( select true from device_requests where client_id = devices.id );
 
                                 UPDATE device_requests
                                 SET is_requested = { (isRequest ? "true" : "false") },
+                                	requested_by_client_id = requesters.id,
                                     request_timestamp = '{CurrentTimestampString()}'
-                                FROM clients where client_name = '{deviceName}'
-                                and client_id = clients.id;
+                                FROM clients as devices
+                                CROSS JOIN clients as requesters 
+                                WHERE devices.client_name = '{deviceName}' and requesters.client_name = '{developerName}'
+                                and client_id = devices.id;
                                 COMMIT;
                             ";
 
@@ -195,11 +199,29 @@ namespace ApiServer
         #endregion
 
         #region cyclic checks
-        public static void DeactivateOldRequests(int maxRequestAgeInSeconds, out bool fault)
+        public static void DeactivateOldRequests(int maxRequestAgeInSeconds, out bool fault, out List<string> deactivatedClients)
         {
             string timeLimit = (DateTime.UtcNow - new TimeSpan(0, 0, maxRequestAgeInSeconds)).ToString(Constants.DATETIME_FORMAT_STRING);
-            string query = $"update device_requests set is_requested = false where request_timestamp < '{timeLimit}' and is_requested = true;";
-            QueryDatabase(query, out fault);
+            string query = $@"
+                    update device_requests
+                    set is_requested = false
+                    from clients
+                    where request_timestamp < '{timeLimit}' and is_requested = true
+                    and clients.id = device_requests.requested_by_client_id
+                    RETURNING clients.client_name;
+                    ";
+
+            var data = GetDatatable(query, "updated_clients", out fault);
+
+            deactivatedClients = new List<string>();
+
+            if (!fault && data.Rows.Count > 0)
+            {
+                foreach (DataRow row in data.Rows)
+                {
+                    deactivatedClients.Add((string)row["client_name"]);
+                }
+            }
         }
 
         public static void ResetOldConnections(int maxConnectionAgeInSeconds, out bool fault)

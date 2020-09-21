@@ -9,25 +9,19 @@ namespace SshOnDemandLibs.Ssh
 {
     public class SftpHelper
     {
-        public void DownloadFile(SshConnectionData connectionData, string remoteFilePath, string localFilePath, out bool fileExists)
+        public void DownloadFile(SshConnectionData connectionData, string remoteFilePath, string localFilePath)
         {
             using (var sftp = new SftpClient(connectionData.Host, connectionData.Username, connectionData.Password))
             {
-                fileExists = false;
-
+ 
                 sftp.Connect();
 
                 var remoteFolder = System.IO.Path.GetDirectoryName(remoteFilePath);
                 var remoteFileName = System.IO.Path.GetFileName(remoteFilePath);
 
-                var files = sftp.ListDirectory(remoteFolder);
-                
-                foreach (var file in files)
+                if (System.IO.File.Exists(localFilePath))
                 {
-                    if (Path.GetFileName(file.FullName) == remoteFileName)
-                    {
-                        fileExists = true;
-                    }
+                    File.Delete(localFilePath);
                 }
 
                 using (Stream streamFile = File.OpenWrite(localFilePath))
@@ -42,9 +36,6 @@ namespace SshOnDemandLibs.Ssh
             using (var sftp = new SftpClient(connectionData.Host, connectionData.Username, connectionData.Password))
             {
                 sftp.Connect();
-                var remoteFolder = System.IO.Path.GetDirectoryName(remoteFilePath);
-                sftp.CreateDirectory(remoteFolder);//Create folder if necessary else skip
-
                 using (Stream file1 = new FileStream(localFilePath, FileMode.Open))
                 {
                     sftp.UploadFile(file1, remoteFilePath, null);

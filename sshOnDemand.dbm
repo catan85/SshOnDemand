@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.2-alpha" last-position="0,0" last-zoom="1"
+	 default-schema="public" default-owner="postgres">
+<database name="sshOnDemand" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<table name="clients">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="220" y="180"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="client_name">
+		<type name="text" length="0"/>
+	</column>
+	<column name="client_key">
+		<type name="text" length="0"/>
+	</column>
+	<column name="is_device">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="is_developer">
+		<type name="boolean" length="0"/>
+	</column>
+	<constraint name="clients_pk" type="pk-constr" table="public.clients">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_client_name" type="uq-constr" table="public.clients">
+		<columns names="client_name" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="developer_authorizations">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="800" y="420"/>
+	<column name="developer_id">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="device_id">
+		<type name="integer" length="0"/>
+	</column>
+</table>
+
+<table name="device_requests">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="800" y="260"/>
+	<column name="client_id">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="requested_by_client_id">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="is_requested">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="request_timestamp">
+		<type name="timestamp" length="0"/>
+	</column>
+</table>
+
+<table name="client_connections">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="820" y="20"/>
+	<column name="client_id">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="status">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="connection_timestamp">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="ssh_ip">
+		<type name="text" length="0"/>
+	</column>
+	<column name="ssh_port">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="ssh_forwarding">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="ssh_user">
+		<type name="text" length="0"/>
+	</column>
+</table>
+
+<constraint name="fk_developer_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="CASCADE" del-action="CASCADE" ref-table="public.clients" table="public.developer_authorizations">
+	<columns names="developer_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_device_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="CASCADE" del-action="CASCADE" ref-table="public.clients" table="public.developer_authorizations">
+	<columns names="device_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_client_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.clients" table="public.device_requests">
+	<columns names="client_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_requester_client_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.clients" table="public.device_requests">
+	<columns names="requested_by_client_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_client_id" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.clients" table="public.client_connections">
+	<columns names="client_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="rel_developer_authorizations_clients" type="relfk"
+	 src-table="public.developer_authorizations"
+	 dst-table="public.clients" reference-fk="fk_developer_id"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_developer_authorizations_clients1" type="relfk"
+	 src-table="public.developer_authorizations"
+	 dst-table="public.clients" reference-fk="fk_device_id"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_device_requests_clients" type="relfk"
+	 src-table="public.device_requests"
+	 dst-table="public.clients" reference-fk="fk_client_id"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_client_connections_clients" type="relfk"
+	 src-table="public.client_connections"
+	 dst-table="public.clients" reference-fk="fk_client_id"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_device_requests_clients1" type="relfk"
+	 src-table="public.device_requests"
+	 dst-table="public.clients" reference-fk="fk_requester_client_id"
+	 src-required="false" dst-required="false"/>
+
+</dbmodel>

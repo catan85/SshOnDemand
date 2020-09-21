@@ -36,7 +36,7 @@ namespace ApiServer.Controllers
                 if (connectionStatus.State == ClientConnectionState.Disconnected)
                 {
 
-                    SshConnectionData connectionData = CreateSshConnectionData();
+                    SshConnectionData connectionData = Utilities.CreateSshConnectionData();
                     // Saving device public key to allow its connection to the ssh server
                     SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "device_" + deviceIdentity, devicePublicKey, AppSettings.SshAuthorizedKeysPath);
 
@@ -60,17 +60,6 @@ namespace ApiServer.Controllers
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, "Database error");
             }
-        }
-
-        private SshConnectionData CreateSshConnectionData()
-        {
-            SshConnectionData connectionData = new SshConnectionData();
-            connectionData.AuthenticationMode = SshAuthMode.WithPassword;
-            connectionData.Host = AppSettings.SshHost;
-            connectionData.Port = AppSettings.SshPort;
-            connectionData.Username = AppSettings.SshUser;
-            connectionData.Password = AppSettings.SshPass;
-            return connectionData;
         }
 
         [AuthRequestAttribute]

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SshOnDemandLibs;
+using SshOnDemandLibs.Entities;
 
 namespace ApiServer
 {
@@ -28,7 +30,15 @@ namespace ApiServer
         private void CheckActiveDeveloperRequests()
         {
             bool fault = false;
-            PostgreSQLClass.DeactivateOldRequests(15, out fault);
+            List<string> deactivatedClients = new List<string>();
+            PostgreSQLClass.DeactivateOldRequests(15, out fault, out deactivatedClients);
+
+            SshConnectionData connectionData = Utilities.CreateSshConnectionData();
+
+            foreach (string deactivatedClient in deactivatedClients)
+            {
+                SshKeysManagement.UnloadKey(connectionData, deactivatedClient, AppSettings.SshAuthorizedKeysPath);
+            }
         }
 
         private void CheckActiveDeviceConnections()
