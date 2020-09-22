@@ -18,18 +18,28 @@ namespace DeviceClient
 
                 DeviceConnectionStatus connectionDetails = await http.CheckRemoteConnectionRequest(ssh.PublicKey);
 
-
-
-                if (connectionDetails != null && (connectionDetails.State == ClientConnectionState.Ready) && ssh.ConnectionState != SshConnectionState.Open)
+                if (connectionDetails != null)
                 {
-                    // Attesa di 2 secondi per fare in modo che OpenSSH acquisisca i certificati che abbiamo appena caricato
-                    System.Threading.Thread.Sleep(5000);
+                    // Reset the connection if the client is connected with the wrong port (old connections)
+                    if (ssh.ConnectionState == SshConnectionState.Open && ssh.CurrentForwardingPort != connectionDetails.SshForwarding)
+                    {
+                        ssh.CloseSshConnection();
+                    }
 
-                    ssh.OpenSshConnection(connectionDetails);
-                    ssh.EnableRemoteForwarding(connectionDetails);
+                    if ((connectionDetails.State == ClientConnectionState.Ready) && ssh.ConnectionState != SshConnectionState.Open)
+                    {
+                        // Attesa di 2 secondi per fare in modo che OpenSSH acquisisca i certificati che abbiamo appena caricato
+                        System.Threading.Thread.Sleep(5000);
+
+                        ssh.OpenSshConnection(connectionDetails);
+                        ssh.EnableRemoteForwarding(connectionDetails);
+                    }
+                    else if ((connectionDetails.State == ClientConnectionState.NotRequest) && (ssh.ConnectionState == SshConnectionState.Open))
+                    {
+                        ssh.CloseSshConnection();
+                    }
                 }
-                else if (((connectionDetails != null && (connectionDetails.State == ClientConnectionState.NotRequest) ) || connectionDetails == null)
-                    && ssh.ConnectionState == SshConnectionState.Open)
+                else
                 {
                     ssh.CloseSshConnection();
                 }
