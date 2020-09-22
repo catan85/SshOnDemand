@@ -33,28 +33,32 @@ namespace SshOnDemandLibs
             return keys;
         }
 
+        private static object locker = new object();
+
         public static void SaveKeys(SshConnectionData sftpConnectionData, string sshUsername, string clientName, string publicKey, string authorizedKeyPath)
         {
-            // Inserire quì la connessione ssh e salvataggio della chiave pubblica sul server
-            // Lo faccio tramite SSH, in questo modo è possibile tenere webserver e server ssh anche separati
-            SftpHelper sftp = new SftpHelper();
+            lock(locker)
+            {
+                // Inserire quì la connessione ssh e salvataggio della chiave pubblica sul server
+                // Lo faccio tramite SSH, in questo modo è possibile tenere webserver e server ssh anche separati
+                SftpHelper sftp = new SftpHelper();
 
-            // download authorized_keys
-            sftp.DownloadFile(sftpConnectionData, authorizedKeyPath, Constants.TEMP_AUTHORIZED_KEYS_FILENAME);
+                // download authorized_keys
+                sftp.DownloadFile(sftpConnectionData, authorizedKeyPath, Constants.TEMP_AUTHORIZED_KEYS_FILENAME);
 
-            #warning la verifica della presenza funziona, ma non è un metodo efficiente. forse andrebbe fatto a database prima di scaricare il file delle auth
-            // check if authorized keys already contains the client key
-            bool clientAlreadyEnabled = IsClientAlreadyEnabled(publicKey, clientName);
+                #warning la verifica della presenza funziona, ma non è un metodo efficiente. forse andrebbe fatto a database prima di scaricare il file delle auth
+                // check if authorized keys already contains the client key
+                bool clientAlreadyEnabled = IsClientAlreadyEnabled(publicKey, clientName);
 
-            // aggiunta della nuova chiave ad authorized_keys
-            if (!clientAlreadyEnabled)
-            { 
-                AddKeyToAuthorized(publicKey, clientName);
+                // aggiunta della nuova chiave ad authorized_keys
+                if (!clientAlreadyEnabled)
+                { 
+                    AddKeyToAuthorized(publicKey, clientName);
+                }
+            
+                // upload di authorized_keys
+                sftp.UploadFile(sftpConnectionData, Constants.TEMP_AUTHORIZED_KEYS_FILENAME, authorizedKeyPath);
             }
-            
-            // upload di authorized_keys
-            sftp.UploadFile(sftpConnectionData, Constants.TEMP_AUTHORIZED_KEYS_FILENAME, authorizedKeyPath);
-            
         }
 
         private static bool IsClientAlreadyEnabled(string publicKey, string clientName)
@@ -74,25 +78,29 @@ namespace SshOnDemandLibs
 
         public static void UnloadKey(SshConnectionData sftpConnectionData, string clientName, string authorizedKeyPath)
         {
-            // Inserire quì la connessione ssh e salvataggio della chiave pubblica sul server
-            // Lo faccio tramite SSH, in questo modo è possibile tenere webserver e server ssh anche separati
-            SftpHelper sftp = new SftpHelper();
-
-            // download authorized_keys
-            sftp.DownloadFile(sftpConnectionData, authorizedKeyPath, Constants.TEMP_AUTHORIZED_KEYS_FILENAME);
-
-            // check if authorized keys already contains the client key
-            bool clientCurrentlyLoaded = IsClientCurrentlyLoaded(clientName);
-
-            // aggiunta della nuova chiave ad authorized_keys
-            if (clientCurrentlyLoaded)
+            lock (locker)
             {
-                RemoveAuthorizedKey(clientName);
+                // Inserire quì la connessione ssh e salvataggio della chiave pubblica sul server
+                // Lo faccio tramite SSH, in questo modo è possibile tenere webserver e server ssh anche separati
+                SftpHelper sftp = new SftpHelper();
 
-                // upload di authorized_keys
-                sftp.UploadFile(sftpConnectionData, Constants.TEMP_AUTHORIZED_KEYS_FILENAME, authorizedKeyPath);
+                // download authorized_keys
+                sftp.DownloadFile(sftpConnectionData, authorizedKeyPath, Constants.TEMP_AUTHORIZED_KEYS_FILENAME);
+
+                // check if authorized keys already contains the client key
+                bool clientCurrentlyLoaded = IsClientCurrentlyLoaded(clientName);
+
+                // aggiunta della nuova chiave ad authorized_keys
+                if (clientCurrentlyLoaded)
+                {
+                    Console.WriteLine($"Unloading {clientName} key.");
+
+                    RemoveAuthorizedKey(clientName);
+
+                    // upload di authorized_keys
+                    sftp.UploadFile(sftpConnectionData, Constants.TEMP_AUTHORIZED_KEYS_FILENAME, authorizedKeyPath);
+                }
             }
-
         }
 
         private static bool IsClientCurrentlyLoaded(string clientName)

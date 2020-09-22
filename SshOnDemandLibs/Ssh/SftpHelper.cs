@@ -9,39 +9,44 @@ namespace SshOnDemandLibs.Ssh
 {
     public class SftpHelper
     {
+        private object locker = new object();
         public void DownloadFile(SshConnectionData connectionData, string remoteFilePath, string localFilePath)
         {
-            using (var sftp = new SftpClient(connectionData.Host, connectionData.Username, connectionData.Password))
-            {
  
-                sftp.Connect();
-
-                var remoteFolder = System.IO.Path.GetDirectoryName(remoteFilePath);
-                var remoteFileName = System.IO.Path.GetFileName(remoteFilePath);
-
-                if (System.IO.File.Exists(localFilePath))
+                using (var sftp = new SftpClient(connectionData.Host, connectionData.Username, connectionData.Password))
                 {
-                    File.Delete(localFilePath);
-                }
+ 
+                    sftp.Connect();
 
-                using (Stream streamFile = File.OpenWrite(localFilePath))
-                {
-                    sftp.DownloadFile(remoteFilePath, streamFile);
+                    var remoteFolder = System.IO.Path.GetDirectoryName(remoteFilePath);
+                    var remoteFileName = System.IO.Path.GetFileName(remoteFilePath);
+
+                    if (System.IO.File.Exists(localFilePath))
+                    {
+                        File.Delete(localFilePath);
+                    }
+
+                    using (Stream streamFile = File.OpenWrite(localFilePath))
+                    {
+                        sftp.DownloadFile(remoteFilePath, streamFile);
+                    }
                 }
-            }
+            
         }
 
         public void UploadFile(SshConnectionData connectionData, string localFilePath, string remoteFilePath)
         {
-            using (var sftp = new SftpClient(connectionData.Host, connectionData.Username, connectionData.Password))
-            {
-                sftp.Connect();
-                using (Stream file1 = new FileStream(localFilePath, FileMode.Open))
+
+                using (var sftp = new SftpClient(connectionData.Host, connectionData.Username, connectionData.Password))
                 {
-                    sftp.UploadFile(file1, remoteFilePath, null);
+                    sftp.Connect();
+                    using (Stream file1 = new FileStream(localFilePath, FileMode.Open))
+                    {
+                        sftp.UploadFile(file1, remoteFilePath, null);
+                    }
+
                 }
-      
-            }
+            
         }
     }
 }

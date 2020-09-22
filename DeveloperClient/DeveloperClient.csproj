@@ -20,4 +20,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="run.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -65,9 +65,9 @@ namespace DeviceClient
             Console.WriteLine(state);
         }
 
-        public async Task ResetActiveDeviceConnection()
+        public async Task SetClosedSshConnectionState()
         {
-            string state = await SetDeviceConnection(client, ClientConnectionState.Disconnected);
+            string state = await SetDeviceConnection(client, ClientConnectionState.ClosedSsh);
             Console.WriteLine(state);
         }
 

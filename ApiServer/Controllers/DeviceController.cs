@@ -33,7 +33,7 @@ namespace ApiServer.Controllers
                 DeviceConnectionStatus connectionStatus = PostgreSQLClass.CheckDeviceConnection(deviceIdentity, out fault);
 
                 // Altrimenti devo fare in modo che venga attivata la nuova connessione
-                if (connectionStatus.State == ClientConnectionState.Disconnected)
+                if (connectionStatus.State != ClientConnectionState.Connected)
                 {
 
                     SshConnectionData connectionData = Utilities.CreateSshConnectionData();
@@ -49,12 +49,13 @@ namespace ApiServer.Controllers
 
                     return Ok(connectionDetails);
                 }
-
+                // in questo caso torna connected (quello che ha detto il db)
                 return Ok(connectionStatus);
             }
             else if (!isDeviceConnectionRequested)
             {
-                return StatusCode(403, "Device connection wasn't requested from any developer");
+                DeviceConnectionStatus connectionStatus = new DeviceConnectionStatus() { State = ClientConnectionState.NotRequest };
+                return Ok(connectionStatus);
             }
             else
             {
@@ -73,6 +74,7 @@ namespace ApiServer.Controllers
             PostgreSQLClass.SetDeviceConnectionState(deviceIdentity, deviceConnectionState, out fault);
 
             if (!fault)
+
             {
                 return Ok($"Status changed to: {deviceConnectionState}");
             }

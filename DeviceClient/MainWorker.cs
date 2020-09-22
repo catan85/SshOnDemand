@@ -18,12 +18,18 @@ namespace DeviceClient
 
                 DeviceConnectionStatus connectionDetails = await http.CheckRemoteConnectionRequest(ssh.PublicKey);
 
-                if (connectionDetails != null && (connectionDetails.State == ClientConnectionState.Ready) && ssh.ConnectionState == SshConnectionState.Closed)
+
+
+                if (connectionDetails != null && (connectionDetails.State == ClientConnectionState.Ready) && ssh.ConnectionState != SshConnectionState.Open)
                 {
+                    // Attesa di 2 secondi per fare in modo che OpenSSH acquisisca i certificati che abbiamo appena caricato
+                    System.Threading.Thread.Sleep(5000);
+
                     ssh.OpenSshConnection(connectionDetails);
                     ssh.EnableRemoteForwarding(connectionDetails);
                 }
-                else if (connectionDetails == null && ssh.ConnectionState == SshConnectionState.Open)
+                else if (((connectionDetails != null && (connectionDetails.State == ClientConnectionState.NotRequest) ) || connectionDetails == null)
+                    && ssh.ConnectionState == SshConnectionState.Open)
                 {
                     ssh.CloseSshConnection();
                 }
@@ -34,9 +40,9 @@ namespace DeviceClient
                 {
                     await http.SetActiveDeviceConnection();
                 }
-                else
+                else if (connectionDetails != null && (connectionDetails.State != ClientConnectionState.NotRequest))
                 {
-                    await http.ResetActiveDeviceConnection();
+                    await http.SetClosedSshConnectionState();
                 }
 
 

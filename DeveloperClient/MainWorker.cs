@@ -24,15 +24,30 @@ namespace DeveloperClient
                 DeviceConnectionStatus deviceConnectionDetails = await http.CheckDeviceConnectionState();
                 if(deviceConnectionDetails != null)
                 {
+                    // Reset the connection if the client is connected with the wrong port (old connections)
+                    if (ssh.ConnectionState == SshConnectionState.Open && ssh.CurrentForwardingPort != deviceConnectionDetails.SshForwarding)
+                    {
+                        ssh.CloseSshConnection();
+                    }
+
+
                     if (deviceConnectionDetails.State != ClientConnectionState.Connected)
                     {
                         Console.WriteLine("Waiting for device connection..");
                     }
                     else
                     {
-                        Console.WriteLine("Device has been connected, connecting developer to the ssh server..");
-                        ssh.OpenSshConnection(deviceConnectionDetails);
-                        ssh.EnableLocalForwarding(deviceConnectionDetails);
+
+                        if (ssh.ConnectionState != SshConnectionState.Open)
+                        {
+                            Console.WriteLine("Device has been connected, connecting developer to the ssh server..");
+
+                            ssh.OpenSshConnection(deviceConnectionDetails);
+                            ssh.EnableLocalForwarding(deviceConnectionDetails);
+                            
+
+                            System.Console.WriteLine("Developer SSH connection created.");
+                        }
                     }
                 }
                 System.Threading.Thread.Sleep(5000);

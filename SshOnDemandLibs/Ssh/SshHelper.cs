@@ -4,6 +4,7 @@ using SshOnDemandLibs.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace SshOnDemandLibs
@@ -21,7 +22,21 @@ namespace SshOnDemandLibs
    
         }
 
-        public SshConnectionState ConnectionState = SshConnectionState.Closed;
+        public SshConnectionState ConnectionState
+        {
+            get
+            {
+
+                var status =  this.Connection != null && this.Connection.IsConnected? SshConnectionState.Open : SshConnectionState.Closed;
+                return status;
+            }
+        }
+
+        public int CurrentForwardingPort
+        {
+            get;set;
+        }
+
         private SshClient Connection = null;
 
 
@@ -37,12 +52,12 @@ namespace SshOnDemandLibs
             SshConnectionData connectionData = new SshConnectionData();
             connectionData.AuthenticationMode = SshAuthMode.WithCertificates;
             connectionData.Host = connectionDetails.SshHost;
+            connectionData.Port = connectionDetails.SshPort;
             connectionData.Username = connectionDetails.SshUser;
             connectionData.PrivateKey = this.PrivateKey;
 
             Connect(connectionData);
 
-            ConnectionState = SshConnectionState.Open;
         }
 
         public void OpenSshConnection(SshConnectionData connectionData)
@@ -54,12 +69,14 @@ namespace SshOnDemandLibs
         // Questa è quella che dovrà fare il developer
         public void EnableLocalForwarding(DeviceConnectionStatus connectionDetails)
         {
+            CurrentForwardingPort = connectionDetails.SshForwarding;
             CreateLocalForwarding("127.0.0.1", Convert.ToUInt32(connectionDetails.SshForwarding), "127.0.0.1", Convert.ToUInt32(connectionDetails.SshForwarding));
         }
 
         // Questa è quella che dovrà fare il device
         public void EnableRemoteForwarding(DeviceConnectionStatus connectionDetails)
         {
+            CurrentForwardingPort = connectionDetails.SshForwarding;
             CreateRemoteForwarding("127.0.0.1", Convert.ToUInt32(connectionDetails.SshForwarding), "127.0.0.1", 22);
         }
 
@@ -71,7 +88,6 @@ namespace SshOnDemandLibs
         public void CloseSshConnection()
         {
             Console.WriteLine("Connection Closed");
-            ConnectionState = SshConnectionState.Closed;
         }
 
 
@@ -82,6 +98,8 @@ namespace SshOnDemandLibs
             {
 
                 WritePrivateKeyToFile(connectionData.PrivateKey);
+
+                
 
                 connectionInfo = new ConnectionInfo(connectionData.Host, connectionData.Port, connectionData.Username,
                 new AuthenticationMethod[]{
