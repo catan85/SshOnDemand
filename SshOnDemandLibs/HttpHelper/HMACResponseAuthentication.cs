@@ -59,12 +59,12 @@ namespace SshOnDemandLibs
             string responseContentBase64String = "";
 
 
-            if (returnedAPPId != HMACDelegatingHandler.APPId)
+            if (returnedAPPId != HMACDelegatingHandler.ClientId)
             {
                 return false;
             }
 
-            var sharedKey = HMACDelegatingHandler.APIKey;
+            var sharedKey = HMACDelegatingHandler.ClientKey;
 
             if (isReplayRequest(response, returnedAPPId, incomingBase64Signature, nonce, requestTimeStamp))
             {

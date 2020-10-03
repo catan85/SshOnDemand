@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2-alpha" last-position="0,0" last-zoom="1"
+<dbmodel pgmodeler-ver="0.9.2-alpha" last-position="47,0" last-zoom="1"
 	 default-schema="public" default-owner="postgres">
 <database name="sshOnDemand" is-template="false" allow-conns="true">
 </database>
@@ -14,7 +14,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="clients">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="220" y="180"/>
+	<position x="200" y="160"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
@@ -41,7 +41,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="developer_authorizations">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="800" y="420"/>
+	<position x="800" y="340"/>
 	<column name="developer_id">
 		<type name="integer" length="0"/>
 	</column>
@@ -53,7 +53,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="device_requests">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="800" y="260"/>
+	<position x="800" y="200"/>
 	<column name="client_id">
 		<type name="integer" length="0"/>
 	</column>
@@ -71,7 +71,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="client_connections">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="820" y="20"/>
+	<position x="800" y="20"/>
 	<column name="client_id">
 		<type name="integer" length="0"/>
 	</column>

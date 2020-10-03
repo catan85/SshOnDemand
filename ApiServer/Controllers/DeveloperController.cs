@@ -31,6 +31,7 @@ namespace ApiServer.Controllers
 
             if (isDeveloperAuthorized && !fault)
             {
+                
                 // Saving Developer public key to allow its connection to the ssh server
                 SshConnectionData connectionData = Utilities.CreateSshConnectionData();
                 SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "developer_" + developerIdentity, args.DeveloperSshPublicKey, AppSettings.SshAuthorizedKeysPath);
@@ -67,7 +68,7 @@ namespace ApiServer.Controllers
             {
                 // Checking device connection status
                 DeviceConnectionStatus status = PostgreSQLClass.CheckDeviceConnection(deviceName, out fault);
-
+                
                 return Ok(status);
             }
             else if (!isDeveloperAuthorized)

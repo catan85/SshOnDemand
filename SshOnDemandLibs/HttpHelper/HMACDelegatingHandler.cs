@@ -11,68 +11,95 @@ namespace SshOnDemandLibs
 {
     public class HMACDelegatingHandler : DelegatingHandler
     {
-        // First obtained the APP ID and API Key from the server
-        // The APIKey MUST be stored securely in db or in the App.Config
-        public static string APPId = "";
-        public static string APIKey = "";
+        public static string ClientId = "";
+        public static string ClientKey = "";
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             HttpResponseMessage response = null;
-            string requestContentBase64String = string.Empty;
+            
+            // Prelevo l'uri della richiesta
+            string uri = HttpUtility.UrlEncode(request.RequestUri.AbsoluteUri.ToLower());
 
-            //Get the Request URI
-            string requestUri = HttpUtility.UrlEncode(request.RequestUri.AbsoluteUri.ToLower());
-
-
-            //Get the Request HTTP Method type
+            // Prelevo il metodo della richiesta HTTP (GET, POST, DELETE, PUT, PATCH)
             string requestHttpMethod = request.Method.Method;
 
-            //Calculate UNIX time
-            DateTime epochStart = new DateTime(1970, 01, 01, 0, 0, 0, 0, DateTimeKind.Utc);
-            TimeSpan timeSpan = DateTime.UtcNow - epochStart;
-            string requestTimeStamp = Convert.ToUInt64(timeSpan.TotalSeconds).ToString();
+            // Genero una stringa contenente il timestamp corrente in formato unix time
+            string requestTimeStamp = GetCurrentUnixTime();
 
-            //Create the random nonce for each request
+            // Genero un nonce random
             string nonce = Guid.NewGuid().ToString("N");
 
-            //Checking if the request contains body, usually will be null wiht HTTP GET and DELETE
+            // Calcolo l'hash MD5 del contenuto della richiesta HTTP
+            // qualora la richiesta non avesse contenuto l'hash risulta vuoto (ad esempio con metodi GET o DELETE)
+            string contentHash = await CalculateContentHash(request);
 
-            if (request.Content != null)
-            {
-                // Hashing the request body, so any change in request body will result a different hash
-                // we will achieve message integrity
-                byte[] content = await request.Content.ReadAsByteArrayAsync();
-                MD5 md5 = MD5.Create();
-                byte[] requestContentHash = md5.ComputeHash(content);
+            // Creo la signature della richiesta HTTP concatenando i parametri:
+            // ClientId, metodo http, uri, timestamp, nonce, hash del contenuto della richiesta
+            string requestSignature = String.Format("{0}{1}{2}{3}{4}{5}", 
+                ClientId, 
+                requestHttpMethod, 
+                uri, 
+                requestTimeStamp, 
+                nonce, 
+                contentHash);
 
-                requestContentBase64String = Convert.ToBase64String(requestContentHash);
-            }
+            // viene cifrata la signature utilizzando l'algoritmo HMAC
+            string cyphredSignature = CalculateHmacString(requestSignature, ClientKey);
 
-            //Creating the raw signature string by combinging
-            //APPId, request Http Method, request Uri, request TimeStamp, nonce, request Content Base64 String
-            string signatureRawData = String.Format("{0}{1}{2}{3}{4}{5}", APPId, requestHttpMethod, requestUri, requestTimeStamp, nonce, requestContentBase64String);
+            // si crea il valore del parametro hmac che inseriremo nell'authentication header
+            // concatenando ClientId, signature cifrata, nonce, timestamp
+            string hmacAuthParameterValue = string.Format("{0}:{1}:{2}:{3}",
+                ClientId,
+                cyphredSignature,
+                nonce,
+                requestTimeStamp);
 
-            //Converting the APIKey into byte array
-            var secretKeyByteArray = Convert.FromBase64String(APIKey);
+            // Viene settato il parametro "hmacauth" dell'authentication header
+            request.Headers.Authorization = new AuthenticationHeaderValue("hmacauth", hmacAuthParameterValue);
 
-            //Converting the signatureRawData into byte array
-            byte[] signature = Encoding.UTF8.GetBytes(signatureRawData);
-
-            //Generate the hmac signature and set it in the Authorization header
-            using (HMACSHA256 hmac = new HMACSHA256(secretKeyByteArray))
-            {
-                byte[] signatureBytes = hmac.ComputeHash(signature);
-                string requestSignatureBase64String = Convert.ToBase64String(signatureBytes);
-
-                //Setting the values in the Authorization header using custom scheme (hmacauth)
-                request.Headers.Authorization = new AuthenticationHeaderValue("hmacauth", string.Format("{0}:{1}:{2}:{3}", APPId, requestSignatureBase64String, nonce, requestTimeStamp));
-                Console.WriteLine(request.Content);
-            }
-
+            // Viene inoltrata la richiesta
             response = await base.SendAsync(request, cancellationToken);
             return response;
         }
+
+
+        private string GetCurrentUnixTime()
+        {
+            DateTime epochStart = new DateTime(1970, 01, 01, 0, 0, 0, 0, DateTimeKind.Utc);
+            TimeSpan timeSpan = DateTime.UtcNow - epochStart;
+            return Convert.ToUInt64(timeSpan.TotalSeconds).ToString();
+        }
+
+        private async Task<string> CalculateContentHash(HttpRequestMessage request)
+        {
+            string contentHash = string.Empty;
+            if (request.Content != null)
+            {
+                byte[] content = await request.Content.ReadAsByteArrayAsync();
+                // Crea l'oggetto MD5 che permette di utilizzare la funzione hash 
+                MD5 md5 = MD5.Create();
+                // Utilizza l'oggetto lanciando la computazione dell'hash del contenuto
+                byte[] requestContentHash = md5.ComputeHash(content);
+                contentHash = Convert.ToBase64String(requestContentHash);
+            }
+            return contentHash;
+        }
+
+        private string CalculateHmacString(string signature, string secret)
+        {
+            var secretByteArray = Convert.FromBase64String(secret);
+            byte[] signatureByteArray = Encoding.UTF8.GetBytes(signature);
+
+            // Crea l’oggetto hmacAlgorithm dando in ingresso la chiave privata condivisa
+            HMACSHA256 hmacAlgorithm = new HMACSHA256(secretByteArray);
+            // Esegue il calcolo dell’hash cifrato
+            byte[] hmacByteArray = hmacAlgorithm.ComputeHash(signatureByteArray);
+            // converte in stringa il valore calcolato e lo torna
+            return Convert.ToBase64String(hmacByteArray);
+        }
+
+
     }
 
 }

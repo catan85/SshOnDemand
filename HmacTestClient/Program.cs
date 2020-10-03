@@ -39,15 +39,15 @@ namespace HmacTestClient
                 // azioni developer usano un'api key developer
                 if (key == ConsoleKey.S || key == ConsoleKey.P || key == ConsoleKey.O || key == ConsoleKey.I)
                 {
-                    HMACDelegatingHandler.APPId = "378ce77c-5b45-4126-9dfa-0371daa51563";
-                    HMACDelegatingHandler.APIKey = "anI4ICTj9bs+gNQRa3aBbbQmsYCGvNIKB1qTkWZoj/k=";
+                    HMACDelegatingHandler.ClientId = "378ce77c-5b45-4126-9dfa-0371daa51563";
+                    HMACDelegatingHandler.ClientKey = "anI4ICTj9bs+gNQRa3aBbbQmsYCGvNIKB1qTkWZoj/k=";
                 }
 
                 if (key == ConsoleKey.Q || key == ConsoleKey.W || key == ConsoleKey.E)
                 {
                     // azioni del device usano un'api key device
-                    HMACDelegatingHandler.APPId = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
-                    HMACDelegatingHandler.APIKey = "U8a2xaaYz2sNhEGDO9T4Ms9Wf4AWMQv+gDpmYJx+YmI=";
+                    HMACDelegatingHandler.ClientId = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
+                    HMACDelegatingHandler.ClientKey = "U8a2xaaYz2sNhEGDO9T4Ms9Wf4AWMQv+gDpmYJx+YmI=";
                 }
 
 
