@@ -11,8 +11,15 @@ namespace SshOnDemandLibs
 {
     public class HMACResponseAuthentication
     {
-        private static readonly UInt64 requestMaxAgeInSeconds = 300; //Means 5 min
-        public static bool IsResponseAuthenticated(HttpResponseMessage response)
+        Logger logger = null;
+
+        public HMACResponseAuthentication(bool enableDebug)
+        {
+            logger = new Logger(enableDebug);
+        }
+
+        private readonly UInt64 requestMaxAgeInSeconds = 300; //Means 5 min
+        public bool IsResponseAuthenticated(HttpResponseMessage response)
         {
             bool authenticated = false;
 
@@ -36,25 +43,25 @@ namespace SshOnDemandLibs
 
                     if (isValid.Result == false)
                     {
-                        Console.WriteLine("Invalid response");
+                        logger.Output("Invalid response");
                     }
                     else
                     {
-                        Console.WriteLine("Valid response");
+                        logger.Debug("Valid response");
                         authenticated = true;
                     }
 
                 }
                 else
                 {
-                    Console.WriteLine("Invalid response");
+                    logger.Output("Invalid response");
                 }
             }
 
             return authenticated;
         }
 
-        private static async Task<bool> IsValidResponse(HttpResponseMessage response, string returnedAPPId, string incomingBase64Signature, string nonce, string requestTimeStamp)
+        private async Task<bool> IsValidResponse(HttpResponseMessage response, string returnedAPPId, string incomingBase64Signature, string nonce, string requestTimeStamp)
         {
             string responseContentBase64String = "";
 
@@ -79,11 +86,11 @@ namespace SshOnDemandLibs
                 byte[] content = await response.Content.ReadAsByteArrayAsync();
 
                 string contentString = Encoding.UTF8.GetString(content, 0, content.Length);
-                Console.WriteLine("Full response content: " + contentString);
+                logger.Debug("Full response content: " + contentString);
                 MD5 md5 = MD5.Create();
                 byte[] responseContentHash = md5.ComputeHash(content);
                 responseContentBase64String = Convert.ToBase64String(responseContentHash);
-                Console.WriteLine("Hashed response: " + responseContentBase64String);
+                logger.Debug("Hashed response: " + responseContentBase64String);
             }
 
             var requestHttpMethod = response.RequestMessage.Method;
@@ -104,7 +111,7 @@ namespace SshOnDemandLibs
 
         }
 
-        private static bool isReplayRequest(HttpResponseMessage response, string APPId, string incomingBase64Signature, string nonce, string responseTimestamp)
+        private bool isReplayRequest(HttpResponseMessage response, string APPId, string incomingBase64Signature, string nonce, string responseTimestamp)
         {
             if (System.Runtime.Caching.MemoryCache.Default.Contains(nonce))
             {

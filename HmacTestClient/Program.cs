@@ -34,6 +34,9 @@ namespace HmacTestClient
             ConsoleKey key = ConsoleKey.S;
             HttpResponseMessage response = null;
 
+            HMACResponseAuthentication hmacResponseAuthenticator = new HMACResponseAuthentication(true);
+
+
             while (true)
             {
                 // azioni developer usano un'api key developer
@@ -83,7 +86,7 @@ namespace HmacTestClient
 
                 if (response.IsSuccessStatusCode)
                 {
-                    bool authenticated = HMACResponseAuthentication.IsResponseAuthenticated(response);
+                    bool authenticated = hmacResponseAuthenticator.IsResponseAuthenticated(response);
                     if (authenticated)
                     {
                         string responseString = await response.Content.ReadAsStringAsync();

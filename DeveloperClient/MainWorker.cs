@@ -35,7 +35,7 @@ namespace DeveloperClient
 
                     if (deviceConnectionDetails.State != ClientConnectionState.Connected)
                     {
-                        logger.Debug("Waiting for device connection..");
+                        logger.Output("Waiting for device connection..");
                     }
                     else
                     {

@@ -16,6 +16,7 @@ namespace DeveloperClient
         private HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler();
         private HttpClient client = null;
         private Logger logger = new Logger(Configuration.Instance.EnableDebug);
+        private HMACResponseAuthentication hmacAuthenticator = new HMACResponseAuthentication(Configuration.Instance.EnableDebug);
         public HttpCaller()
         {
 
@@ -48,7 +49,7 @@ namespace DeveloperClient
 
             if (response.IsSuccessStatusCode)
             {
-                bool authenticated = HMACResponseAuthentication.IsResponseAuthenticated(response);
+                bool authenticated = hmacAuthenticator.IsResponseAuthenticated(response);
                 if (authenticated)
                 {
                     string responseString = await response.Content.ReadAsStringAsync();
@@ -81,7 +82,7 @@ namespace DeveloperClient
 
             if (response.IsSuccessStatusCode)
             {
-                bool authenticated = HMACResponseAuthentication.IsResponseAuthenticated(response);
+                bool authenticated = hmacAuthenticator.IsResponseAuthenticated(response);
                 if (authenticated)
                 {
                     string responseString = await response.Content.ReadAsStringAsync();

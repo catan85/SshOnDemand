@@ -14,11 +14,11 @@ namespace DeviceClient
         private string apiBaseAddress = "https://localhost:5001/";
         private HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler();
         private HttpClient client = null;
-
+        private HMACResponseAuthentication hmacResponseAuthenticator = new HMACResponseAuthentication(Configuration.Instance.EnableDebug);
         public HttpCaller()
         {
-            HMACDelegatingHandler.ClientId = ConfigurationManager.AppSettings["ClientName"];
-            HMACDelegatingHandler.ClientKey = ConfigurationManager.AppSettings["ClientKey"];
+            HMACDelegatingHandler.ClientId = Configuration.Instance.ClientName;
+            HMACDelegatingHandler.ClientKey = Configuration.Instance.ClientKey;
 
             client = HttpClientFactory.Create(customDelegatingHandler);
             
@@ -40,7 +40,7 @@ namespace DeviceClient
 
             if (response.IsSuccessStatusCode)
             {
-                bool authenticated = HMACResponseAuthentication.IsResponseAuthenticated(response);
+                bool authenticated = hmacResponseAuthenticator.IsResponseAuthenticated(response);
                 if (authenticated)
                 {
                     string responseString = await response.Content.ReadAsStringAsync();
@@ -80,7 +80,7 @@ namespace DeviceClient
 
             if (response.IsSuccessStatusCode)
             {
-                bool authenticated = HMACResponseAuthentication.IsResponseAuthenticated(response);
+                bool authenticated = hmacResponseAuthenticator.IsResponseAuthenticated(response);
                 if (authenticated)
                 {
                     string responseString = await response.Content.ReadAsStringAsync();
