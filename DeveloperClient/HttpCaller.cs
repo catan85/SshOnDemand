@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Configuration;
 using System.Threading.Tasks;
+using SshOnDemandLibs;
 
 
 namespace DeveloperClient
@@ -14,11 +15,13 @@ namespace DeveloperClient
         private string apiBaseAddress = "https://localhost:5001/";
         private HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler();
         private HttpClient client = null;
-
+        private Logger logger = new Logger(Configuration.Instance.EnableDebug);
         public HttpCaller()
         {
-            HMACDelegatingHandler.ClientId = ConfigurationManager.AppSettings["ClientName"];
-            HMACDelegatingHandler.ClientKey = ConfigurationManager.AppSettings["ClientKey"];
+
+
+            HMACDelegatingHandler.ClientId = Configuration.Instance.ClientName;
+            HMACDelegatingHandler.ClientKey = Configuration.Instance.ClientKey;
 
             client = HttpClientFactory.Create(customDelegatingHandler);
         }
@@ -28,7 +31,8 @@ namespace DeveloperClient
         public async Task InsertConnectionRequest(string sshPublicKey)
         {
             string state = await DeveloperConnectionRequest(client, sshPublicKey);
-            Console.WriteLine(state);
+
+            logger.Debug(state);
         }
 
 
@@ -38,7 +42,7 @@ namespace DeveloperClient
 
             DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
             args.DeveloperSshPublicKey = sshPublicKey;
-            args.DeviceName = ConfigurationManager.AppSettings["TargetDevice"];
+            args.DeviceName = Configuration.Instance.TargetDevice;
 
             response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
 
@@ -71,7 +75,7 @@ namespace DeveloperClient
         {
             HttpResponseMessage response = null;
 
-            string deviceName = ConfigurationManager.AppSettings["TargetDevice"];
+            string deviceName = Configuration.Instance.TargetDevice;
 
             response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperCheckDeviceConnection", deviceName);
 
@@ -83,7 +87,7 @@ namespace DeveloperClient
                     string responseString = await response.Content.ReadAsStringAsync();
 
                     DeviceConnectionStatus currentStatus = Newtonsoft.Json.JsonConvert.DeserializeObject<DeviceConnectionStatus>(responseString);
-                    Console.WriteLine(responseString);
+                    logger.Debug(responseString);
 
                     return currentStatus;
                 }
@@ -98,9 +102,9 @@ namespace DeveloperClient
 
         private async Task PrintFailMessage(HttpResponseMessage response)
         {
-            Console.WriteLine("Failed to call the API. HTTP Status: {0}, Reason {1}", response.StatusCode, response.ReasonPhrase);
+            logger.Output($"Failed to call the API. HTTP Status: {response.StatusCode}, Reason {response.ReasonPhrase}");
             string responseString = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseString);
+            logger.Output(responseString);
         }
     }
 }

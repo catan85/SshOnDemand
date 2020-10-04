@@ -10,6 +10,8 @@ namespace DeveloperClient
     {
         private HttpCaller http = new HttpCaller();
         private SshHelper ssh = new SshHelper();
+        private Logger logger = new Logger(Configuration.Instance.EnableDebug);
+
 
         public async Task Run()
         {
@@ -33,20 +35,19 @@ namespace DeveloperClient
 
                     if (deviceConnectionDetails.State != ClientConnectionState.Connected)
                     {
-                        Console.WriteLine("Waiting for device connection..");
+                        logger.Debug("Waiting for device connection..");
                     }
                     else
                     {
 
                         if (ssh.ConnectionState != SshConnectionState.Open)
                         {
-                            Console.WriteLine("Device has been connected, connecting developer to the ssh server..");
+                            logger.Debug("Device has been connected, connecting developer to the ssh server..");
 
                             ssh.OpenSshConnection(deviceConnectionDetails);
                             ssh.EnableLocalForwarding(deviceConnectionDetails);
                             
-
-                            System.Console.WriteLine("Developer SSH connection created.");
+                            logger.Output($"Developer SSH connection created: Device ssh server exposed on port {deviceConnectionDetails.SshForwarding})");
                         }
                     }
                 }

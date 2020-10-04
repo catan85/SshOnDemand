@@ -132,7 +132,7 @@ namespace ApiServer.Filters
                 contentHashString);
 
             // Calcola la signature cifrata con HMAC
-            string calculatedSignature = CalculateCypheredSignature(requestSignature, sharedKey);
+            string calculatedSignature = CalculateHmacString(requestSignature, sharedKey);
 
             // Torna true se la signature cifrata calcolata è uguale a quella ricevuta
             return incomingBase64Signature.Equals(calculatedSignature, StringComparison.Ordinal);
@@ -215,16 +215,20 @@ namespace ApiServer.Filters
             }
         }
 
-        private string CalculateCypheredSignature(string signature, string sharedKey)
+        private string CalculateHmacString(string signature, string secret)
         {
-            var secretKeyBytes = Convert.FromBase64String(sharedKey);
-            byte[] signatureBytes = Encoding.UTF8.GetBytes(signature);
-            using (HMACSHA256 hmac = new HMACSHA256(secretKeyBytes))
-            {
-                byte[] signatureCypheredBytes = hmac.ComputeHash(signatureBytes);
-                return Convert.ToBase64String(signatureBytes);
-            }
+            var secretByteArray = Convert.FromBase64String(secret);
+            byte[] signatureByteArray = Encoding.UTF8.GetBytes(signature);
+
+            // Crea l’oggetto hmacAlgorithm dando in ingresso la chiave privata condivisa
+            HMACSHA256 hmacAlgorithm = new HMACSHA256(secretByteArray);
+            // Esegue il calcolo dell’hash cifrato
+            byte[] hmacByteArray = hmacAlgorithm.ComputeHash(signatureByteArray);
+            // converte in stringa il valore calcolato e lo torna
+            return Convert.ToBase64String(hmacByteArray);
         }
+
+
     }
 }
 
