@@ -116,7 +116,7 @@ namespace HmacTestClient
         private static async Task<HttpResponseMessage> DeveloperConnectionRequest_FAIL(HttpClient client)
         {
             Console.WriteLine("Test di una richiesta di connessione da parte dello sviluppatore, NON VALIDA (device name inesistente)");
-            DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
+            DeveloperCheckDeviceConnectionArgs args = new DeveloperCheckDeviceConnectionArgs();
             args.DeveloperSshPublicKey = "abcde";
             args.DeviceName = "blabla";
 
@@ -125,7 +125,7 @@ namespace HmacTestClient
         private static async Task<HttpResponseMessage> DeveloperConnectionRequest_DONE(HttpClient client)
         {
             Console.WriteLine("Test di inserimento di una richiesta di connessione da parte dello sviluppatore, VALIDA");
-            DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
+            DeveloperCheckDeviceConnectionArgs args = new DeveloperCheckDeviceConnectionArgs();
             args.DeveloperSshPublicKey = "abcde";
             args.DeviceName = "50148590-1b48-4cf5-a76d-8a7f9474a3de";
             return await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);

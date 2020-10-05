@@ -28,24 +28,21 @@ namespace DeveloperClient
         }
 
 
-
-        public async Task InsertConnectionRequest(string sshPublicKey)
+        public async Task InsertConnectionRequest()
         {
-            string state = await DeveloperConnectionRequest(client, sshPublicKey);
+            string state = await DeveloperConnectionRequest(client);
 
             logger.Debug(state);
         }
 
 
-        private async Task<string> DeveloperConnectionRequest(HttpClient client, string sshPublicKey)
+        private async Task<string> DeveloperConnectionRequest(HttpClient client)
         {
             HttpResponseMessage response = null;
 
-            DeveloperDeviceConnectionRequestArgs args = new DeveloperDeviceConnectionRequestArgs();
-            args.DeveloperSshPublicKey = sshPublicKey;
-            args.DeviceName = Configuration.Instance.TargetDevice;
+            string deviceName = Configuration.Instance.TargetDevice;
 
-            response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", args);
+            response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperDeviceConnectionRequest", deviceName);
 
             if (response.IsSuccessStatusCode)
             {
@@ -64,21 +61,24 @@ namespace DeveloperClient
             return null;
         }
 
-        public async Task<DeviceConnectionStatus> CheckDeviceConnectionState()
+        public async Task<DeviceConnectionStatus> CheckDeviceConnectionState(string sshPublicKey)
         {
-            DeviceConnectionStatus state = await DeveloperCheckDeviceConnectionState(client);
+            DeviceConnectionStatus state = await DeveloperCheckDeviceConnectionState(client, sshPublicKey);
 
             return state;
         }
 
 
-        private async Task<DeviceConnectionStatus> DeveloperCheckDeviceConnectionState(HttpClient client)
+        private async Task<DeviceConnectionStatus> DeveloperCheckDeviceConnectionState(HttpClient client, string sshPublicKey)
         {
             HttpResponseMessage response = null;
 
-            string deviceName = Configuration.Instance.TargetDevice;
 
-            response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperCheckDeviceConnection", deviceName);
+            DeveloperCheckDeviceConnectionArgs args = new DeveloperCheckDeviceConnectionArgs();
+            args.DeveloperSshPublicKey = sshPublicKey;
+            args.DeviceName = Configuration.Instance.TargetDevice;
+
+            response = await client.PostAsJsonAsync(apiBaseAddress + "DeveloperCheckDeviceConnection", args);
 
             if (response.IsSuccessStatusCode)
             {

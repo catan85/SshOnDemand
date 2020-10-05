@@ -2,7 +2,7 @@
 
 namespace SshOnDemandLibs
 {
-    public class DeveloperDeviceConnectionRequestArgs
+    public class DeveloperCheckDeviceConnectionArgs
     {
         public string DeveloperSshPublicKey { get; set; }
         public string DeviceName { get; set; }
