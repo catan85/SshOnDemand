@@ -35,7 +35,7 @@ namespace SshOnDemandLibs
 
         private static object locker = new object();
 
-        public static void SaveKeys(SshConnectionData sftpConnectionData, string sshUsername, string clientName, string publicKey, string authorizedKeyPath)
+        public static void SaveKeys(SshConnectionData sftpConnectionData, string sshUsername, string clientName, string publicKey, string authorizedKeyPath,int? forwardingPort)
         {
             lock(locker)
             {
@@ -53,7 +53,7 @@ namespace SshOnDemandLibs
                 // aggiunta della nuova chiave ad authorized_keys
                 if (!clientAlreadyEnabled)
                 { 
-                    AddKeyToAuthorized(publicKey, clientName);
+                    AddKeyToAuthorized(publicKey, clientName, forwardingPort);
                 }
             
                 // upload di authorized_keys
@@ -68,11 +68,17 @@ namespace SshOnDemandLibs
         }
 
 
-        private static void AddKeyToAuthorized(string publicKey, string clientName)
+        private static void AddKeyToAuthorized(string publicKey, string clientName, int? forwardingPort)
         {
             using (StreamWriter sw = new StreamWriter(Constants.TEMP_AUTHORIZED_KEYS_FILENAME, append:true))
             {
-                sw.WriteLine(publicKey.Remove(publicKey.Length - 2, 2) + " " + clientName);
+
+                string enablePortForwardingPrefix = "";
+                if (forwardingPort.HasValue)
+                    enablePortForwardingPrefix = $"command=\"echo 'Port forwarding only account.'\",port-forwarding,permitopen=\"127.0.0.1:{forwardingPort}\" ";
+
+                string publicKeyString = publicKey.Remove(publicKey.Length - 2, 2);
+                sw.WriteLine($"{enablePortForwardingPrefix}{publicKeyString} {clientName}");
             }
         }
 

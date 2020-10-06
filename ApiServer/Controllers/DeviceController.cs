@@ -38,7 +38,7 @@ namespace ApiServer.Controllers
 
                     SshConnectionData connectionData = Utilities.CreateSshConnectionData();
                     // Saving device public key to allow its connection to the ssh server
-                    SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "device_" + deviceIdentity, devicePublicKey, AppSettings.SshAuthorizedKeysPath);
+                    SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "device_" + deviceIdentity, devicePublicKey, AppSettings.SshAuthorizedKeysPath, connectionStatus.SshForwarding);
 
                     // Generating Ssh connection details
                     DeviceConnectionStatus connectionDetails = GenerateSshConnectionDetails();

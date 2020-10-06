@@ -70,7 +70,7 @@ namespace ApiServer.Controllers
                 {
                     // Saving Developer public key to allow its connection to the ssh server
                     SshConnectionData connectionData = Utilities.CreateSshConnectionData();
-                    SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "developer_" + developerIdentity, args.DeveloperSshPublicKey, AppSettings.SshAuthorizedKeysPath);
+                    SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "developer_" + developerIdentity, args.DeveloperSshPublicKey, AppSettings.SshAuthorizedKeysPath, status.SshForwarding);
                 }
 
                 return Ok(status);
