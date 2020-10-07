@@ -54,10 +54,9 @@ namespace SshOnDemandLibs
                 if (!clientAlreadyEnabled)
                 { 
                     AddKeyToAuthorized(publicKey, clientName, forwardingPort);
+                    // upload di authorized_keys
+                    sftp.UploadFile(sftpConnectionData, Constants.TEMP_AUTHORIZED_KEYS_FILENAME, authorizedKeyPath);
                 }
-            
-                // upload di authorized_keys
-                sftp.UploadFile(sftpConnectionData, Constants.TEMP_AUTHORIZED_KEYS_FILENAME, authorizedKeyPath);
             }
         }
 
