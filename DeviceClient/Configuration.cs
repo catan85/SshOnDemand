@@ -25,13 +25,11 @@ namespace DeviceClient
 
         public bool EnableDebug { get; set; }
         public string ClientName { get; set; }
-        public string ClientKey { get; set; }
 
         private Configuration()
         {
             EnableDebug = ConfigurationManager.AppSettings["EnableDebug"] == "True" ? true : false;
             ClientName = ConfigurationManager.AppSettings["ClientName"];
-            ClientKey = ConfigurationManager.AppSettings["ClientKey"];
         }
     }
 

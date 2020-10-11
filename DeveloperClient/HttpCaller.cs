@@ -13,10 +13,10 @@ namespace DeveloperClient
     class HttpCaller
     {
         private string apiBaseAddress = "https://localhost:5001/";
-        private HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler();
+        private HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler(false);
         private HttpClient client = null;
         private Logger logger = new Logger(Configuration.Instance.EnableDebug);
-        private HMACResponseAuthentication hmacAuthenticator = new HMACResponseAuthentication(Configuration.Instance.EnableDebug);
+        private HMACResponseAuthentication hmacAuthenticator = new HMACResponseAuthentication(Configuration.Instance.EnableDebug, false);
         public HttpCaller()
         {
 

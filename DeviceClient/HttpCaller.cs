@@ -12,16 +12,14 @@ namespace DeviceClient
     class HttpCaller
     {
         private string apiBaseAddress = "https://localhost:5001/";
-        private HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler();
+        private HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler(true);
         private HttpClient client = null;
-        private HMACResponseAuthentication hmacResponseAuthenticator = new HMACResponseAuthentication(Configuration.Instance.EnableDebug);
+        private HMACResponseAuthentication hmacResponseAuthenticator = new HMACResponseAuthentication(Configuration.Instance.EnableDebug, true);
         public HttpCaller()
         {
             HMACDelegatingHandler.ClientId = Configuration.Instance.ClientName;
-            HMACDelegatingHandler.ClientKey = Configuration.Instance.ClientKey;
 
             client = HttpClientFactory.Create(customDelegatingHandler);
-            
         }
 
         public async Task<DeviceConnectionStatus> CheckRemoteConnectionRequest(string publicKey)

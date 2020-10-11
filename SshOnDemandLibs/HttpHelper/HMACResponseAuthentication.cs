@@ -12,10 +12,12 @@ namespace SshOnDemandLibs
     public class HMACResponseAuthentication
     {
         Logger logger = null;
+        bool enableTpm = false;
 
-        public HMACResponseAuthentication(bool enableDebug)
+        public HMACResponseAuthentication(bool enableDebug, bool enableTpmSigning)
         {
             logger = new Logger(enableDebug);
+            enableTpm = enableTpmSigning;
         }
 
         private readonly UInt64 requestMaxAgeInSeconds = 300; //Means 5 min
@@ -97,18 +99,30 @@ namespace SshOnDemandLibs
 
             string requestUri = HttpUtility.UrlEncode(response.RequestMessage.RequestUri.AbsoluteUri.ToLower());
 
-            string signatureRawData = String.Format("{0}{1}{2}{3}{4}{5}", returnedAPPId, requestHttpMethod, requestUri, requestTimeStamp, nonce, responseContentBase64String);
-            var secretKeyBytes = Convert.FromBase64String(sharedKey);
-            byte[] signature = Encoding.UTF8.GetBytes(signatureRawData);
-            using (HMACSHA256 hmac = new HMACSHA256(secretKeyBytes))
+            string digestString = String.Format("{0}{1}{2}{3}{4}{5}", returnedAPPId, requestHttpMethod, requestUri, requestTimeStamp, nonce, responseContentBase64String);
+            
+            byte[] digestBytes = Encoding.UTF8.GetBytes(digestString);
+
+            byte[] signatureBytes = SignHmac(digestBytes,sharedKey);
+
+            var signatureString = Convert.ToBase64String(signatureBytes);
+            return (incomingBase64Signature.Equals(signatureString, StringComparison.Ordinal));
+        }
+
+        private byte[] SignHmac(byte[] digestBytes, string sharedKey)
+        {
+            if (enableTpm)
             {
-                byte[] signatureBytes = hmac.ComputeHash(signature);
-
-                var calculatedSignature = Convert.ToBase64String(signatureBytes);
-
-                return (incomingBase64Signature.Equals(calculatedSignature, StringComparison.Ordinal));
+                return TpmHelper.SignHmac(digestBytes);
             }
-
+            else
+            {
+                var secretKeyBytes = Convert.FromBase64String(sharedKey);
+                using (HMACSHA256 hmac = new HMACSHA256(secretKeyBytes))
+                {
+                    return hmac.ComputeHash(digestBytes);
+                }
+            }
         }
 
         private bool isReplayRequest(HttpResponseMessage response, string APPId, string incomingBase64Signature, string nonce, string responseTimestamp)

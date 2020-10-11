@@ -13,6 +13,13 @@ namespace SshOnDemandLibs
     {
         public static string ClientId = "";
         public static string ClientKey = "";
+        private static bool useTpm = false;
+
+
+        public HMACDelegatingHandler(bool useTpmSigning)
+        {
+            useTpm = useTpmSigning;
+        }
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -45,8 +52,18 @@ namespace SshOnDemandLibs
                 contentHash);
 
             // viene cifrata la signature utilizzando l'algoritmo HMAC
-            string cyphredSignature = CalculateHmacString(requestSignature, ClientKey);
 
+            string cyphredSignature = "";
+            
+            if (useTpm)
+            {
+                cyphredSignature = CalculateHmacStringWithTpm(requestSignature);
+            }
+            else
+            {
+                cyphredSignature = CalculateHmacString(requestSignature, ClientKey);
+            }
+        
             // si crea il valore del parametro hmac che inseriremo nell'authentication header
             // concatenando ClientId, signature cifrata, nonce, timestamp
             string hmacAuthParameterValue = string.Format("{0}:{1}:{2}:{3}",
@@ -99,6 +116,14 @@ namespace SshOnDemandLibs
             return Convert.ToBase64String(hmacByteArray);
         }
 
+        private string CalculateHmacStringWithTpm(string signature)
+        {
+            byte[] signatureByteArray = Encoding.UTF8.GetBytes(signature);
+            byte[] hmacByteArray = TpmHelper.SignHmac(signatureByteArray);
+
+            // converte in stringa il valore calcolato e lo torna
+            return Convert.ToBase64String(hmacByteArray);
+        }
 
     }
 

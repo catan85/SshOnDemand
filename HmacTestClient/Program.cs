@@ -27,14 +27,14 @@ namespace HmacTestClient
         {
             Console.WriteLine("Calling the back-end API");
 
-            HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler();
+            HMACDelegatingHandler customDelegatingHandler = new HMACDelegatingHandler(false);
 
             HttpClient client = HttpClientFactory.Create(customDelegatingHandler);
 
             ConsoleKey key = ConsoleKey.S;
             HttpResponseMessage response = null;
 
-            HMACResponseAuthentication hmacResponseAuthenticator = new HMACResponseAuthentication(true);
+            HMACResponseAuthentication hmacResponseAuthenticator = new HMACResponseAuthentication(true, false);
 
 
             while (true)
