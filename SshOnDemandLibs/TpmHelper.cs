@@ -146,6 +146,8 @@ namespace SshOnDemandLibs
                                            new byte[0],
                                            (ushort)nvData.Length));
 
+            
+
             // Scrittura nello store non volatile della funzione HMAC
             tpm.NvWrite(nvHandle, nvHandle, nvData, 0);
 
@@ -179,6 +181,28 @@ namespace SshOnDemandLibs
 
             // Flush degli oggetti transienti dal tpm
             tpm.FlushContext(loadedHmacKey);
+        }
+
+
+        /// <summary>
+        /// Funzione per la pulizia di una chiave e funzione HMAC precedentementi salvati nel TPM
+        /// </summary>
+        public static void CleanOldHmacKey()
+        {
+            // Apertura del TPM
+            Tpm2Device tpmDevice = new TbsDevice();
+            tpmDevice.Connect();
+            var tpm = new Tpm2(tpmDevice);
+
+            TpmHandle ownerHandle = new TpmHandle(TpmRh.Owner);
+            TpmHandle nvHandle = new TpmHandle(AIOTH_PERSISTED_URI_INDEX + logicalDeviceId);
+            TpmHandle hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE + logicalDeviceId);
+
+            // Undefine dello spazio utilizzato per la chiave HMAC
+            tpm.NvUndefineSpace(ownerHandle, nvHandle);
+
+            // Rimozione della funzione HMAC
+            tpm.EvictControl(ownerHandle, hmacKeyHandle, hmacKeyHandle);
         }
 
 

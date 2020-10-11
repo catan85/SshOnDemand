@@ -32,8 +32,7 @@ namespace TpmTest
                     // Salvataggio della chiave come valore nel TPM
                     // TpmHelper.SaveValueIntoTpm(2500, b, b.Length);
 
-
-                    // Salvataggio della chiave in un algoritmo HMAC nel TPM
+                 
                     TpmHelper.SaveHmacKey(secret);
 
                 }
@@ -49,6 +48,7 @@ namespace TpmTest
 
                 if (operation.Key == ConsoleKey.H)
                 {
+                    secret = "HeeFfpsSelN8c5zIJuZn7mQ28MBGIAoqp8Nf94N2eGM=";
                     string crypted = CalculateHmacString(stringToBeCyphered, secret);
                     Console.WriteLine("La stringa cifrata con System.Security.Cryptography è:");
                     Console.WriteLine(crypted);

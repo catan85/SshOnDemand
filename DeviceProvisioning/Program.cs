@@ -1,5 +1,7 @@
 ﻿using System;
 using SshOnDemandLibs;
+using Tpm2Lib;
+
 namespace DeviceProvisioning
 {
     class Program
@@ -27,6 +29,21 @@ namespace DeviceProvisioning
 
                 Console.WriteLine("Shared key written succesfully.");
 
+            }
+            catch (TpmException tpmException)
+            {
+                if (tpmException.ErrorString == "NvDefined")
+                {
+                    Console.WriteLine("Another Shared key seems to be already saved, would you like to replace the current Shared Key?");
+                    Console.WriteLine("Press Y to overwrite, other buttons to abort");
+                    var key = Console.ReadKey(true);
+                    if (key.Key == ConsoleKey.Y)
+                    {
+                        TpmHelper.CleanOldHmacKey();
+                        TpmHelper.SaveHmacKey(sharedKey);
+                    }
+
+                }
             }
             catch(Exception ex)
             {
