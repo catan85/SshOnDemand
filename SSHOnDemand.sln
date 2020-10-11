@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SshOnDemandLibs", "SshOnDem
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SshConnectionTest", "SshConnectionTest\SshConnectionTest.csproj", "{BA2F3208-5555-4658-A17D-68C84451456A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TpmTest", "TpmTest\TpmTest.csproj", "{5DBA9311-5D33-4A17-91ED-EAF059E5AE6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TpmTest", "TpmTest\TpmTest.csproj", "{5DBA9311-5D33-4A17-91ED-EAF059E5AE6C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceProvisioning", "DeviceProvisioning\DeviceProvisioning.csproj", "{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{5DBA9311-5D33-4A17-91ED-EAF059E5AE6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DBA9311-5D33-4A17-91ED-EAF059E5AE6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DBA9311-5D33-4A17-91ED-EAF059E5AE6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

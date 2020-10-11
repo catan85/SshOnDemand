@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
-
+using SshOnDemandLibs;
 
 
 namespace TpmTest
@@ -30,7 +30,8 @@ namespace TpmTest
                     byte[] b = Encoding.ASCII.GetBytes(secret);
 
                     // Salvataggio della chiave come valore nel TPM
-                    TpmHelper.SaveValueIntoTpm(2500, b, b.Length);
+                    // TpmHelper.SaveValueIntoTpm(2500, b, b.Length);
+
 
                     // Salvataggio della chiave in un algoritmo HMAC nel TPM
                     TpmHelper.SaveHmacKey(secret);
@@ -83,7 +84,7 @@ namespace TpmTest
         {
             byte[] signatureByteArray = Encoding.UTF8.GetBytes(signature);
 
-            byte[] hmacByteArray = TpmHelper.SignHmac(signatureByteArray, 2500);
+            byte[] hmacByteArray = TpmHelper.SignHmac(signatureByteArray);
             return Convert.ToBase64String(hmacByteArray);
         }
 
