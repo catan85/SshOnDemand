@@ -52,7 +52,6 @@ namespace SshOnDemandLibs
                 contentHash);
 
             // viene cifrata la signature utilizzando l'algoritmo HMAC
-
             string cyphredSignature = "";
             
             if (useTpm)

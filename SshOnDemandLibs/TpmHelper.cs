@@ -34,9 +34,6 @@ namespace SshOnDemandLibs
         // https://trustedcomputinggroup.org/wp-content/uploads/TCG_TPM2_r1p59_Part1_Architecture_pub.pdf
         //  A pagina 110 una tabella degli indirizzi
 
-
-
-
         public static AuthValue authValue = new AuthValue(new byte[] { 22, 123, 22, 1, 33 });
         public static void SaveValueIntoTpm(int address, byte[] data, int length)
         {
@@ -118,9 +115,10 @@ namespace SshOnDemandLibs
             // Definizione dell'handle per la memorizzazione dell'oggetto HMAC
             TpmHandle hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE + logicalDeviceId);
 
-            // Definizione dell'handle della Storage Root Key, si tratta della chiave principale utilizzata
-            // per il salvataggio di altre chiavi. Ogni chiave salvata nel TPM infatti viene cifrata utilizzando la 
-            // sua chiave "padre". La SRK è la chiave più alta dell'albero
+            // Definizione dell'handle della Storage Root Key, si tratta della chiave 
+            // principale utilizzata per il salvataggio di altre chiavi. Ogni chiave salvata 
+            // nel TPM infatti viene cifrata utilizzando la sua chiave "padre".
+            // La SRK è la chiave più alta dell'albero
             TpmHandle srkHandle = new TpmHandle(SRK_HANDLE);
             UTF8Encoding utf8 = new UTF8Encoding();
 
@@ -137,42 +135,49 @@ namespace SshOnDemandLibs
 
             // Definizione dello store Non volatile
             // Il primo parametro è l'Owner TPM
-            // il terzo parametro è la funzione HMAC che intendiamo salvare (NvPublic sta per Non volatile public area)
+            // il terzo parametro è la funzione HMAC che intendiamo salvare 
+            // (NvPublic sta per Non volatile public area)
             tpm.NvDefineSpace(ownerHandle,
                               new byte[0],
-                              new NvPublic(nvHandle,
-                                           TpmAlgId.Sha256,
-                                           NvAttr.Authwrite | NvAttr.Authread | NvAttr.NoDa,
-                                           new byte[0],
-                                           (ushort)nvData.Length));
-
-            
+                              new NvPublic(
+                                  nvHandle,
+                                  TpmAlgId.Sha256,
+                                  NvAttr.Authwrite | NvAttr.Authread | NvAttr.NoDa,
+                                  new byte[0],
+                                  (ushort)nvData.Length));
 
             // Scrittura nello store non volatile della funzione HMAC
             tpm.NvWrite(nvHandle, nvHandle, nvData, 0);
-
 
             // Importazione della chiave HMAC sotto la Storage Root Key
             TpmPublic hmacPub;
             CreationData creationData;
             byte[] creationhash;
             TkCreation ticket;
-            TpmPrivate hmacPrv = tpm.Create(srkHandle,
-                                            // Passaggio della chiave privata
-                                            new SensitiveCreate(new byte[0],            
-                                                                hmacKey),   
-                                            // Definizione della funzione HMAC
-                                            new TpmPublic(TpmAlgId.Sha256,      
-                                                          ObjectAttr.UserWithAuth | ObjectAttr.NoDA | ObjectAttr.Sign,
-                                                          new byte[0],
-                                                          new KeyedhashParms(new SchemeHmac(TpmAlgId.Sha256)),
-                                                          new Tpm2bDigestKeyedhash()),
-                                            new byte[0],
-                                            new PcrSelection[0],
-                                            out hmacPub,
-                                            out creationData,
-                                            out creationhash,
-                                            out ticket);
+
+            // Passaggio della chiave privata
+            var sensitiveCreate = new SensitiveCreate(new byte[0], hmacKey);
+
+            // Definizione dell'uso che si farà della chiave
+            var tpmPublic = new TpmPublic(
+                TpmAlgId.Sha256,
+                ObjectAttr.UserWithAuth | ObjectAttr.NoDA | ObjectAttr.Sign,
+                new byte[0],
+                new KeyedhashParms(new SchemeHmac(TpmAlgId.Sha256)),
+                new Tpm2bDigestKeyedhash());
+
+            // Salvataggio della chiave privata nel tpm
+            TpmPrivate hmacPrv = tpm.Create(
+                srkHandle, 
+                sensitiveCreate,   
+                tpmPublic,
+                new byte[0],
+                new PcrSelection[0],
+                out hmacPub,
+                out creationData,
+                out creationhash,
+                out ticket);
+
             // Caricamento della chiave HMAC nel TPM
             TpmHandle loadedHmacKey = tpm.Load(srkHandle, hmacPrv, hmacPub);
 
@@ -268,11 +273,13 @@ namespace SshOnDemandLibs
 
                     // Caricamento della parte finale 
                     iterationBuffer = new Byte[dataToSign.Length - dataIndex];
-                    Array.Copy(dataToSign, dataIndex, iterationBuffer, 0, dataToSign.Length - dataIndex);
+                    Array.Copy(dataToSign, dataIndex, iterationBuffer, 
+                        0, dataToSign.Length - dataIndex);
                     TkHashcheck nullChk;
 
                     // Si finalizza l'HMAC con l'ultima parte dei dati
-                    hmac = tpm.SequenceComplete(hmacHandle, iterationBuffer, TpmHandle.RhNull, out nullChk);
+                    hmac = tpm.SequenceComplete(hmacHandle, iterationBuffer, 
+                        TpmHandle.RhNull, out nullChk);
 
                     // Dispose del TPM
                     tpm.Dispose();
