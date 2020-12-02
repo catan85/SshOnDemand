@@ -14,10 +14,10 @@ namespace SshOnDemandLibs
         Logger logger = null;
         bool enableTpm = false;
 
-        public HMACResponseAuthentication(bool enableDebug, bool enableTpmSigning)
+        public HMACResponseAuthentication(bool enableDebug, bool enableTpm)
         {
             logger = new Logger(enableDebug);
-            enableTpm = enableTpmSigning;
+            this.enableTpm = enableTpm;
         }
 
         private readonly UInt64 requestMaxAgeInSeconds = 300; //Means 5 min
@@ -37,11 +37,11 @@ namespace SshOnDemandLibs
                 if (authArray.Length == 4)
                 {
                     var APPId = authArray[0];
-                    var incomingBase64Signature = authArray[1];
+                    var incomingBase64ValueString = authArray[1];
                     var nonce = authArray[2];
                     var requestTimeStamp = authArray[3];
 
-                    var isValid = IsValidResponse(response, APPId, incomingBase64Signature, nonce, requestTimeStamp);
+                    var isValid = IsValidResponse(response, APPId, incomingBase64ValueString, nonce, requestTimeStamp);
 
                     if (isValid.Result == false)
                     {
@@ -63,7 +63,7 @@ namespace SshOnDemandLibs
             return authenticated;
         }
 
-        private async Task<bool> IsValidResponse(HttpResponseMessage response, string returnedAPPId, string incomingBase64Signature, string nonce, string requestTimeStamp)
+        private async Task<bool> IsValidResponse(HttpResponseMessage response, string returnedAPPId, string incomingAuthValue, string nonce, string requestTimeStamp)
         {
             string responseContentBase64String = "";
 
@@ -75,7 +75,7 @@ namespace SshOnDemandLibs
 
             var sharedKey = HMACDelegatingHandler.ClientKey;
 
-            if (isReplayRequest(response, returnedAPPId, incomingBase64Signature, nonce, requestTimeStamp))
+            if (isReplayRequest(response, returnedAPPId, incomingAuthValue, nonce, requestTimeStamp))
             {
                 return false;
             }
@@ -103,17 +103,17 @@ namespace SshOnDemandLibs
             
             byte[] digestBytes = Encoding.UTF8.GetBytes(digestString);
 
-            byte[] signatureBytes = SignHmac(digestBytes,sharedKey);
+            byte[] authBytes = CypherHmac(digestBytes,sharedKey);
 
-            var signatureString = Convert.ToBase64String(signatureBytes);
-            return (incomingBase64Signature.Equals(signatureString, StringComparison.Ordinal));
+            var authString = Convert.ToBase64String(authBytes);
+            return (incomingAuthValue.Equals(authString, StringComparison.Ordinal));
         }
 
-        private byte[] SignHmac(byte[] digestBytes, string sharedKey)
+        private byte[] CypherHmac(byte[] digestBytes, string sharedKey)
         {
             if (enableTpm)
             {
-                return TpmHelper.SignHmac(digestBytes);
+                return TpmHelper.CalculateHmac(digestBytes);
             }
             else
             {
@@ -125,7 +125,7 @@ namespace SshOnDemandLibs
             }
         }
 
-        private bool isReplayRequest(HttpResponseMessage response, string APPId, string incomingBase64Signature, string nonce, string responseTimestamp)
+        private bool isReplayRequest(HttpResponseMessage response, string APPId, string incomingAuthString, string nonce, string responseTimestamp)
         {
             if (System.Runtime.Caching.MemoryCache.Default.Contains(nonce))
             {

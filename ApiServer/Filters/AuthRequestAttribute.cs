@@ -46,7 +46,7 @@ namespace ApiServer.Filters
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            // Lettura del Authorization Header contenente la firma cifrata
+            // Lettura del Authorization Header contenente la firma autenticata
             context.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues authString);
 
             if (!StringValues.IsNullOrEmpty(authString) && authString.ToString().StartsWith("hmacauth "))
@@ -60,12 +60,12 @@ namespace ApiServer.Filters
                 {
                     // Vengono estratti i parametri necessari alla verifica
                     var clientId = authArray[0];
-                    var signature = authArray[1];
+                    var authValue = authArray[1];
                     var nonce = authArray[2];
                     var timestamp = authArray[3];
 
                     // Viene lanciato il metodo di verifica
-                    var isValid = IsValidRequest(context.HttpContext.Request, clientId, signature, nonce, timestamp);
+                    var isValid = IsValidRequest(context.HttpContext.Request, clientId, authValue, nonce, timestamp);
 
                     // Passaggio del client name al controller per conoscere l'identità del device
                     context.HttpContext.Items["ClientName"] = clientId;
@@ -92,7 +92,7 @@ namespace ApiServer.Filters
             await next();
         }
 
-        private async Task<bool> IsValidRequest(HttpRequest req, string clientId, string incomingBase64Signature, string nonce, string requestTimeStamp)
+        private async Task<bool> IsValidRequest(HttpRequest req, string clientId, string incomingBase64AuthenticatedValue, string nonce, string requestTimeStamp)
         {
             // estrazione dell'uri dalla chiamata ricevuta
             string uri = UriHelper.GetEncodedUrl(req);
@@ -122,8 +122,8 @@ namespace ApiServer.Filters
             // Calcola l'hash con algoritmo MD5
             string contentHashString = await CalculateContentHashString(requestContentByteArray);
 
-            // Compone la signature
-            string requestSignature = String.Format("{0}{1}{2}{3}{4}{5}", 
+            // Compone lo string Value
+            string requestStringValue = String.Format("{0}{1}{2}{3}{4}{5}", 
                 clientId, 
                 requestHttpMethod, 
                 uri, 
@@ -131,11 +131,11 @@ namespace ApiServer.Filters
                 nonce, 
                 contentHashString);
 
-            // Calcola la signature cifrata con HMAC
-            string calculatedSignature = CalculateHmacString(requestSignature, sharedKey);
+            // Calcola la versione autenticata della stringa con HMAC
+            string authStringValue = CalculateHmacString(requestStringValue, sharedKey);
 
-            // Torna true se la signature cifrata calcolata è uguale a quella ricevuta
-            return incomingBase64Signature.Equals(calculatedSignature, StringComparison.Ordinal);
+            // Torna true se le due stringhe autenticate (calcolata e ricevuta) sono uguali
+            return incomingBase64AuthenticatedValue.Equals(authStringValue, StringComparison.Ordinal);
 
         }
 
@@ -215,15 +215,15 @@ namespace ApiServer.Filters
             }
         }
 
-        private string CalculateHmacString(string signature, string secret)
+        private string CalculateHmacString(string value, string secret)
         {
             var secretByteArray = Convert.FromBase64String(secret);
-            byte[] signatureByteArray = Encoding.UTF8.GetBytes(signature);
+            byte[] valueByteArray = Encoding.UTF8.GetBytes(value);
 
             // Crea l’oggetto hmacAlgorithm dando in ingresso la chiave privata condivisa
             HMACSHA256 hmacAlgorithm = new HMACSHA256(secretByteArray);
-            // Esegue il calcolo dell’hash cifrato
-            byte[] hmacByteArray = hmacAlgorithm.ComputeHash(signatureByteArray);
+            // Esegue il calcolo dell’hash autenticato
+            byte[] hmacByteArray = hmacAlgorithm.ComputeHash(valueByteArray);
             // converte in stringa il valore calcolato e lo torna
             return Convert.ToBase64String(hmacByteArray);
         }

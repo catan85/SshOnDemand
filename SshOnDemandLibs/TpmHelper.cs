@@ -63,10 +63,6 @@ namespace SshOnDemandLibs
             tpm.Dispose();
         }
 
-        public byte[] SignHmac(byte[] signatureByteArray, int v)
-        {
-            throw new NotImplementedException();
-        }
 
         public static byte[] ReadValueFromTpm(int address, int length)
         {
@@ -214,9 +210,9 @@ namespace SshOnDemandLibs
         /// <summary>
         /// Funzione per la firma HMAC tramite TPM
         /// </summary>
-        /// <param name="dataToSign"></param>
+        /// <param name="dataToAuth"></param>
         /// <returns></returns>
-        public static Byte[] SignHmac(Byte[] dataToSign)
+        public static Byte[] CalculateHmac(Byte[] dataToAuth)
         {
             TpmHandle hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE + logicalDeviceId);
          
@@ -225,7 +221,7 @@ namespace SshOnDemandLibs
             Byte[] hmac = { };
 
             // Se i valori da firmare sono < 1024 byte
-            if (dataToSign.Length <= 1024)
+            if (dataToAuth.Length <= 1024)
             {
                 try
                 {
@@ -235,7 +231,7 @@ namespace SshOnDemandLibs
                     var tpm = new Tpm2(tpmDevice);
 
                     // Calcolo dell'HMAC tramite la funzione salvata in precedenza
-                    hmac = tpm.Hmac(hmacKeyHandle, dataToSign, TpmAlgId.Sha256);
+                    hmac = tpm.Hmac(hmacKeyHandle, dataToAuth, TpmAlgId.Sha256);
 
                     // Dispose del TPM
                     tpm.Dispose();
@@ -260,11 +256,11 @@ namespace SshOnDemandLibs
                     TpmHandle hmacHandle = tpm.HmacStart(hmacKeyHandle, hmacAuth, TpmAlgId.Sha256);
 
                     // ciclo su tutti i dati da firmare a blocchi da 1024 byte
-                    while (dataToSign.Length > dataIndex + 1024)
+                    while (dataToAuth.Length > dataIndex + 1024)
                     {
                         // Repeat to update the hmac until we only hace <=1024 bytes left
                         iterationBuffer = new Byte[1024];
-                        Array.Copy(dataToSign, dataIndex, iterationBuffer, 0, 1024);
+                        Array.Copy(dataToAuth, dataIndex, iterationBuffer, 0, 1024);
 
                         // Caricamento dei dati nel tpm (calcolo parziale)
                         tpm.SequenceUpdate(hmacHandle, iterationBuffer);
@@ -272,9 +268,9 @@ namespace SshOnDemandLibs
                     }
 
                     // Caricamento della parte finale 
-                    iterationBuffer = new Byte[dataToSign.Length - dataIndex];
-                    Array.Copy(dataToSign, dataIndex, iterationBuffer, 
-                        0, dataToSign.Length - dataIndex);
+                    iterationBuffer = new Byte[dataToAuth.Length - dataIndex];
+                    Array.Copy(dataToAuth, dataIndex, iterationBuffer, 
+                        0, dataToAuth.Length - dataIndex);
                     TkHashcheck nullChk;
 
                     // Si finalizza l'HMAC con l'ultima parte dei dati

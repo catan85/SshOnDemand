@@ -16,9 +16,9 @@ namespace SshOnDemandLibs
         private static bool useTpm = false;
 
 
-        public HMACDelegatingHandler(bool useTpmSigning)
+        public HMACDelegatingHandler(bool useTpmDevice)
         {
-            useTpm = useTpmSigning;
+            useTpm = useTpmDevice;
         }
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -41,9 +41,9 @@ namespace SshOnDemandLibs
             // qualora la richiesta non avesse contenuto l'hash risulta vuoto (ad esempio con metodi GET o DELETE)
             string contentHash = await CalculateContentHash(request);
 
-            // Creo la signature della richiesta HTTP concatenando i parametri:
+            // Creo la stringa della richiesta HTTP concatenando i parametri:
             // ClientId, metodo http, uri, timestamp, nonce, hash del contenuto della richiesta
-            string requestSignature = String.Format("{0}{1}{2}{3}{4}{5}", 
+            string requestStringValue = String.Format("{0}{1}{2}{3}{4}{5}", 
                 ClientId, 
                 requestHttpMethod, 
                 uri, 
@@ -51,23 +51,23 @@ namespace SshOnDemandLibs
                 nonce, 
                 contentHash);
 
-            // viene cifrata la signature utilizzando l'algoritmo HMAC
-            string cyphredSignature = "";
+            // viene autenticata la stringa utilizzando l'algoritmo HMAC
+            string authenticatedStringValue = "";
             
             if (useTpm)
             {
-                cyphredSignature = CalculateHmacStringWithTpm(requestSignature);
+                authenticatedStringValue = CalculateHmacStringWithTpm(requestStringValue);
             }
             else
             {
-                cyphredSignature = CalculateHmacString(requestSignature, ClientKey);
+                authenticatedStringValue = CalculateHmacString(requestStringValue, ClientKey);
             }
         
             // si crea il valore del parametro hmac che inseriremo nell'authentication header
-            // concatenando ClientId, signature cifrata, nonce, timestamp
+            // concatenando ClientId, stringa autenticata, nonce, timestamp
             string hmacAuthParameterValue = string.Format("{0}:{1}:{2}:{3}",
                 ClientId,
-                cyphredSignature,
+                authenticatedStringValue,
                 nonce,
                 requestTimeStamp);
 
@@ -102,23 +102,23 @@ namespace SshOnDemandLibs
             return contentHash;
         }
 
-        private string CalculateHmacString(string signature, string secret)
+        private string CalculateHmacString(string value, string secret)
         {
             var secretByteArray = Convert.FromBase64String(secret);
-            byte[] signatureByteArray = Encoding.UTF8.GetBytes(signature);
+            byte[] valueByteArray = Encoding.UTF8.GetBytes(value);
 
             // Crea l’oggetto hmacAlgorithm dando in ingresso la chiave privata condivisa
             HMACSHA256 hmacAlgorithm = new HMACSHA256(secretByteArray);
-            // Esegue il calcolo dell’hash cifrato
-            byte[] hmacByteArray = hmacAlgorithm.ComputeHash(signatureByteArray);
+            // Esegue il calcolo dell’hash autenticato
+            byte[] hmacByteArray = hmacAlgorithm.ComputeHash(valueByteArray);
             // converte in stringa il valore calcolato e lo torna
             return Convert.ToBase64String(hmacByteArray);
         }
 
-        private string CalculateHmacStringWithTpm(string signature)
+        private string CalculateHmacStringWithTpm(string value)
         {
-            byte[] signatureByteArray = Encoding.UTF8.GetBytes(signature);
-            byte[] hmacByteArray = TpmHelper.SignHmac(signatureByteArray);
+            byte[] valueByteArray = Encoding.UTF8.GetBytes(value);
+            byte[] hmacByteArray = TpmHelper.CalculateHmac(valueByteArray);
 
             // converte in stringa il valore calcolato e lo torna
             return Convert.ToBase64String(hmacByteArray);

@@ -66,25 +66,25 @@ namespace TpmTest
 
 
         // Calcolatore HMAC con using System.Security.Cryptography;
-        private static string CalculateHmacString(string signature, string secret)
+        private static string CalculateHmacString(string value, string secret)
         {
 
-            byte[] signatureByteArray = Encoding.UTF8.GetBytes(signature);
+            byte[] valueByteArray = Encoding.UTF8.GetBytes(value);
             byte[] secretByteArray = Convert.FromBase64String(secret);
 
             // Crea l’oggetto hmacAlgorithm dando in ingresso la chiave privata condivisa
             HMACSHA256 hmacAlgorithm = new HMACSHA256(secretByteArray);
             // Esegue il calcolo dell’hash cifrato
-            byte[] hmacByteArray = hmacAlgorithm.ComputeHash(signatureByteArray);
+            byte[] hmacByteArray = hmacAlgorithm.ComputeHash(valueByteArray);
             // converte in stringa il valore calcolato e lo torna
             return Convert.ToBase64String(hmacByteArray);
         }
 
-        private static string CalculateHmacStringTpm(string signature)
+        private static string CalculateHmacStringTpm(string value)
         {
-            byte[] signatureByteArray = Encoding.UTF8.GetBytes(signature);
+            byte[] valueByteArray = Encoding.UTF8.GetBytes(value);
 
-            byte[] hmacByteArray = TpmHelper.SignHmac(signatureByteArray);
+            byte[] hmacByteArray = TpmHelper.CalculateHmac(valueByteArray);
             return Convert.ToBase64String(hmacByteArray);
         }
 

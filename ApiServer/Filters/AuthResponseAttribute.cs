@@ -97,24 +97,24 @@ namespace ApiServer.Filters
                 var APPId = authArray[0];
                 var APIKey = allowedApps[APPId];
 
-                //Creating the raw signature string by combinging
+                //Creating the raw string by combining
                 //APPId, request Http Method, request Uri, request TimeStamp, nonce, request Content Base64 String
-                string signatureRawData = String.Format("{0}{1}{2}{3}{4}{5}", APPId, requestHttpMethod, requestUri, requestTimeStamp, nonce, responseContentBase64String);
+                string requestStringValue = String.Format("{0}{1}{2}{3}{4}{5}", APPId, requestHttpMethod, requestUri, requestTimeStamp, nonce, responseContentBase64String);
                 
                 //Converting the APIKey into byte array
                 var secretKeyByteArray = Convert.FromBase64String(APIKey);
 
-                //Converting the signatureRawData into byte array
-                byte[] signature = Encoding.UTF8.GetBytes(signatureRawData);
+                //Converting the requestStringValue into byte array
+                byte[] requestValueArray = Encoding.UTF8.GetBytes(requestStringValue);
 
-                //Generate the hmac signature and set it in the Authorization header
+                //Generate the hmac authenticated value and set it in the Authorization header
                 using (HMACSHA256 hmac = new HMACSHA256(secretKeyByteArray))
                 {
-                    byte[] signatureBytes = hmac.ComputeHash(signature);
-                    string requestSignatureBase64String = Convert.ToBase64String(signatureBytes);
+                    byte[] authenticatedRequestValueArray = hmac.ComputeHash(requestValueArray);
+                    string authenticatedBase64String = Convert.ToBase64String(authenticatedRequestValueArray);
 
                     //Setting the values in the Authorization header using custom scheme (hmacauth)
-                    context.HttpContext.Response.Headers["Authorization"] = string.Format("hmacauth {0}:{1}:{2}:{3}", APPId, requestSignatureBase64String, nonce, requestTimeStamp);
+                    context.HttpContext.Response.Headers["Authorization"] = string.Format("hmacauth {0}:{1}:{2}:{3}", APPId, authenticatedBase64String, nonce, requestTimeStamp);
                     Console.WriteLine(context.HttpContext.Response.Headers["Authorization"]);
                 }
             }
