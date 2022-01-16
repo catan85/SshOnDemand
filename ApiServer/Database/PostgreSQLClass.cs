@@ -15,6 +15,7 @@ namespace ApiServer
     using System.Configuration;
     using System.Linq;
     using SshOnDemandLibs;
+    using ApiServer.Entities;
 
     /// <summary>
     /// Classe di interfacciamento con database Postgresql
@@ -247,6 +248,8 @@ namespace ApiServer
         }
 
         #endregion
+
+      
 
         private static string CurrentTimestampString()
         {
