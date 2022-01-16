@@ -18,19 +18,19 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using System.Net.Http;
+
 
 namespace ApiServer.Filters
 {
 
     [AttributeUsage(validOn: AttributeTargets.Class | AttributeTargets.Method)]
-    public class AuthRequestAttribute : Attribute, IAsyncActionFilter
+    public class HmacAuthRequestAttribute : Attribute, IAuthorizationFilter
     {
         private static Dictionary<string, string> clientsSharedKeys = new Dictionary<string, string>();
         private readonly UInt64 requestMaxAgeInSeconds = 300; //Means 5 min
         private readonly string authenticationScheme = "hmacauth";
         
-        public AuthRequestAttribute()
+        public HmacAuthRequestAttribute()
         {
             if (clientsSharedKeys.Count == 0)
             {
@@ -44,11 +44,11 @@ namespace ApiServer.Filters
             }
         }
 
-        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
             // Lettura del Authorization Header contenente la firma autenticata
             context.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues authString);
-
             if (!StringValues.IsNullOrEmpty(authString) && authString.ToString().StartsWith("hmacauth "))
             {
                 // si rimuove l'intestazione della firma in modo da poter ottenere solo i parametri utili alla verifica
@@ -89,8 +89,8 @@ namespace ApiServer.Filters
                 return;
             }
 
-            await next();
         }
+
 
         private async Task<bool> IsValidRequest(HttpRequest req, string clientId, string incomingBase64AuthenticatedValue, string nonce, string requestTimeStamp)
         {
@@ -149,6 +149,7 @@ namespace ApiServer.Filters
                 await req.Body.CopyToAsync(ms);
                 reqBodyByteArray = ms.ToArray();
             }
+            req.Body.Position = 0;
             return reqBodyByteArray;
         }
 

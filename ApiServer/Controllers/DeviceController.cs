@@ -13,8 +13,8 @@ namespace ApiServer.Controllers
 {
     public class DeviceController : ControllerBase
     {
-        [AuthRequestAttribute]
-        [AuthResponseAttribute]
+        [HmacAuthRequest]
+        [HmacAuthResponse]
         [HttpPost(template: "DeviceCheckRemoteConnectionRequest")]
         public IActionResult DeviceCheckRemoteConnectionRequest([FromBody] string devicePublicKey)
         {
@@ -63,8 +63,8 @@ namespace ApiServer.Controllers
             }
         }
 
-        [AuthRequestAttribute]
-        [AuthResponseAttribute]
+        [HmacAuthRequest]
+        [HmacAuthResponse]
         [HttpPost(template: "DeviceSetConnectionState")]
         public IActionResult DeviceSetConnectionState([FromBody] ClientConnectionState deviceConnectionState)
         {

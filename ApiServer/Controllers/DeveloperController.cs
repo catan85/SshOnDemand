@@ -16,8 +16,8 @@ namespace ApiServer.Controllers
     public class DeveloperController : ControllerBase
     {
 
-        [AuthRequestAttribute]
-        [AuthResponseAttribute]
+        [HmacAuthRequest]
+        [HmacAuthResponse]
         [HttpPost(template: "DeveloperDeviceConnectionRequest")]
         public IActionResult DeveloperDeviceConnectionRequest([FromBody] string deviceName)
         {
@@ -46,8 +46,8 @@ namespace ApiServer.Controllers
         }
 
 
-        [AuthRequestAttribute]
-        [AuthResponseAttribute]
+        [HmacAuthRequest]
+        [HmacAuthResponse]
         [HttpPost(template: "DeveloperCheckDeviceConnection")]
         public IActionResult DeveloperCheckDeviceConnection([FromBody] DeveloperCheckDeviceConnectionArgs args)
         {

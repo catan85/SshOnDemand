@@ -17,7 +17,7 @@ using System.Web;
 
 namespace ApiServer.Filters
 {
-    public class AuthResponseAttribute : ResultFilterAttribute
+    public class HmacAuthResponseAttribute : ResultFilterAttribute
     {
 
 
@@ -26,7 +26,7 @@ namespace ApiServer.Filters
         private readonly string authenticationScheme = "hmacauth";
 
 
-        public AuthResponseAttribute()
+        public HmacAuthResponseAttribute()
         {
             if (allowedApps.Count == 0)
             {
@@ -99,7 +99,14 @@ namespace ApiServer.Filters
 
                 //Creating the raw string by combining
                 //APPId, request Http Method, request Uri, request TimeStamp, nonce, request Content Base64 String
-                string requestStringValue = String.Format("{0}{1}{2}{3}{4}{5}", APPId, requestHttpMethod, requestUri, requestTimeStamp, nonce, responseContentBase64String);
+                string requestStringValue = String.Format(
+                    "{0}{1}{2}{3}{4}{5}", 
+                    APPId, 
+                    requestHttpMethod, 
+                    requestUri, 
+                    requestTimeStamp, 
+                    nonce, 
+                    responseContentBase64String);
                 
                 //Converting the APIKey into byte array
                 var secretKeyByteArray = Convert.FromBase64String(APIKey);

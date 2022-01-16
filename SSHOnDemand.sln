@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratorAppIdAppKey", "GeneratorAppIdAppKey\GeneratorAppIdAppKey.csproj", "{5799C71D-092F-4B69-BFD7-82910E48440F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiServer", "ApiServer\ApiServer.csproj", "{2354933B-6F73-4271-8614-ECC396DEF218}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HmacTestClient", "HmacTestClient\HmacTestClient.csproj", "{CD388200-491A-44A3-A26F-5AEA0119E3AE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceClient", "DeviceClient\DeviceClient.csproj", "{90BEF6AB-B0CF-4EF0-A693-B1F4A79C5B45}"
@@ -19,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SshConnectionTest", "SshCon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TpmTest", "TpmTest\TpmTest.csproj", "{5DBA9311-5D33-4A17-91ED-EAF059E5AE6C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceProvisioning", "DeviceProvisioning\DeviceProvisioning.csproj", "{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceProvisioning", "DeviceProvisioning\DeviceProvisioning.csproj", "{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiServer", "ApiServer\ApiServer.csproj", "{911BDFF5-7A33-43E9-A44A-082B1467B9CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,10 +31,6 @@ Global
 		{5799C71D-092F-4B69-BFD7-82910E48440F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5799C71D-092F-4B69-BFD7-82910E48440F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5799C71D-092F-4B69-BFD7-82910E48440F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2354933B-6F73-4271-8614-ECC396DEF218}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2354933B-6F73-4271-8614-ECC396DEF218}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2354933B-6F73-4271-8614-ECC396DEF218}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2354933B-6F73-4271-8614-ECC396DEF218}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD388200-491A-44A3-A26F-5AEA0119E3AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -63,6 +59,10 @@ Global
 		{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{911BDFF5-7A33-43E9-A44A-082B1467B9CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{911BDFF5-7A33-43E9-A44A-082B1467B9CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{911BDFF5-7A33-43E9-A44A-082B1467B9CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{911BDFF5-7A33-43E9-A44A-082B1467B9CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
