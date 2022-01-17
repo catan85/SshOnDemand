@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using ApiServer.Filters;
+using ApiServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SshOnDemandLibs;
@@ -13,6 +14,12 @@ namespace ApiServer.Controllers
 {
     public class DeviceController : ControllerBase
     {
+        private readonly sshondemandContext dbContext;
+        public DeviceController(sshondemandContext dbContext)
+        {
+            this.dbContext = dbContext;
+        }
+
         [HmacAuthRequest]
         [HmacAuthResponse]
         [HttpPost(template: "DeviceCheckRemoteConnectionRequest")]
@@ -25,12 +32,12 @@ namespace ApiServer.Controllers
 
             // Check device connection authorization
             // superflua --> bool isDeviceAuthorized = PostgreSQLClass.IsDeviceConnectionAuthorized(deviceIdentity, out fault);  --> già fatto nel filter
-            bool isDeviceConnectionRequested = PostgreSQLClass.IsDeviceConnectionRequested(deviceIdentity, out fault);
+            bool isDeviceConnectionRequested = PostgreSQLClass.IsDeviceConnectionRequested(dbContext, deviceIdentity);
 
             if (isDeviceConnectionRequested && !fault)
             {
                 // Verifica dello stato della connessione, se è già attiva non devo fare nulla
-                DeviceConnectionStatus connectionStatus = PostgreSQLClass.CheckDeviceConnection(deviceIdentity, out fault);
+                DeviceConnectionStatus connectionStatus = PostgreSQLClass.CheckDeviceConnection(dbContext, deviceIdentity);
 
                 // Altrimenti devo fare in modo che venga attivata la nuova connessione
                 if (connectionStatus.State != ClientConnectionState.Connected)

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using ApiServer.Filters;
-
+using ApiServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SshOnDemandLibs;
@@ -15,24 +15,28 @@ namespace ApiServer.Controllers
 
     public class DeveloperController : ControllerBase
     {
+        private readonly sshondemandContext dbContext;
+        public DeveloperController(sshondemandContext dbContext)
+        {
+            this.dbContext = dbContext;
+        }
 
         [HmacAuthRequest]
         [HmacAuthResponse]
         [HttpPost(template: "DeveloperDeviceConnectionRequest")]
         public IActionResult DeveloperDeviceConnectionRequest([FromBody] string deviceName)
         {
-            bool fault = false;
             string developerIdentity = (string)HttpContext.Items["ClientName"];
 
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = PostgreSQLClass.IsDeveloperConnectionToDeviceAuthorized(developerIdentity, deviceName, out fault);
+            bool isDeveloperAuthorized = PostgreSQLClass.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, deviceName);
 
-            if (isDeveloperAuthorized && !fault)
+            if (isDeveloperAuthorized)
             {
                 // Inserting device connection request
-                PostgreSQLClass.InsertDeviceConnectionRequest(deviceName, developerIdentity, true, out fault);
+                PostgreSQLClass.InsertDeviceConnectionRequest(dbContext, deviceName, developerIdentity);
                 return Ok("Request has been set");
             }
             else  if (!isDeveloperAuthorized)
@@ -57,13 +61,13 @@ namespace ApiServer.Controllers
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = PostgreSQLClass.IsDeveloperConnectionToDeviceAuthorized(developerIdentity, args.DeviceName, out fault);
+            bool isDeveloperAuthorized = PostgreSQLClass.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, args.DeviceName);
 
-            if (isDeveloperAuthorized && !fault)
+            if (isDeveloperAuthorized)
             {
 
                 // Checking device connection status
-                DeviceConnectionStatus status = PostgreSQLClass.CheckDeviceConnection(args.DeviceName, out fault);
+                DeviceConnectionStatus status = PostgreSQLClass.CheckDeviceConnection(dbContext, args.DeviceName);
 
 
                 if (status.State == ClientConnectionState.Ready || status.State == ClientConnectionState.Connected)

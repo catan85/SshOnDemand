@@ -16,6 +16,7 @@ namespace ApiServer
     using System.Linq;
     using SshOnDemandLibs;
     using ApiServer.Entities;
+    using ApiServer.Models;
 
     /// <summary>
     /// Classe di interfacciamento con database Postgresql
@@ -40,58 +41,33 @@ namespace ApiServer
             return GetDatatable(query, tablename, out fault);
         }
 
-        public static DeviceConnectionStatus CheckDeviceConnection(string deviceName, out bool fault)
+        public static DeviceConnectionStatus CheckDeviceConnection(sshondemandContext dbContext, string deviceName)
         {
             DeviceConnectionStatus status = new DeviceConnectionStatus();
             status.State = ClientConnectionState.Disconnected;
-
-            string query = $@"SELECT status, ssh_ip, ssh_port, ssh_user, ssh_forwarding FROM client_connections
-                            JOIN clients 
-                            ON client_connections.client_id = clients.id
-                            WHERE clients.client_name = '{deviceName}';";
-            DataTable data = GetDatatable(query, "connections", out fault);
-
-            if (data.Rows.Count == 1)
+            var connectionStatus = dbContext.ClientConnections.Where(c => c.Client.ClientName == deviceName).SingleOrDefault();
+            if (connectionStatus != null)
             {
-                status.State = (ClientConnectionState)((short)data.Rows[0]["status"]);
-                status.SshHost = (string)data.Rows[0]["ssh_ip"];
-                status.SshPort = (int)data.Rows[0]["ssh_port"];
-                status.SshForwarding = (int)data.Rows[0]["ssh_forwarding"];
-                status.SshUser = (string)data.Rows[0]["ssh_user"];
+                status.State = (ClientConnectionState)(connectionStatus.Status);
+                status.SshHost = connectionStatus.SshIp;
+                status.SshPort = connectionStatus.SshPort.Value;
+                status.SshForwarding = connectionStatus.SshForwarding.Value;
+                status.SshUser = connectionStatus.SshUser;
             }
             return status;
         }
         #endregion
 
         #region device queries
-        public static bool IsDeviceConnectionAuthorized(string deviceName, out bool fault)
+
+
+        public static bool IsDeviceConnectionRequested(sshondemandContext dbContext, string deviceName)
         {
-            string query = $@"select true from clients where client_name = '{deviceName}';";
+            var request = dbContext.DeviceRequests.SingleOrDefault(r => r.Client.ClientName == deviceName);
 
-            DataTable dt = GetDatatable(query, "developer_authorizations", out fault);
-
-            if (dt.Rows.Count == 1)
+            if (request != null)
             {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-
-        public static bool IsDeviceConnectionRequested(string deviceName, out bool fault)
-        {
-            string query = $@"select is_requested from device_requests
-                            join clients on clients.id = device_requests.client_id
-                            where clients.client_name = '{deviceName}';";
-
-            DataTable dt = GetDatatable(query, "client_requests", out fault);
-
-            if (dt.Rows.Count == 1)
-            {
-                return (bool)dt.Rows[0]["is_requested"];
+                return request.IsRequested.Value;
             }
             else
             {
@@ -154,47 +130,26 @@ namespace ApiServer
         #endregion
 
         #region developer queries
-        public static bool IsDeveloperConnectionToDeviceAuthorized(string developerName, string deviceName, out bool fault)
+        public static bool IsDeveloperConnectionToDeviceAuthorized(sshondemandContext dbContext, string developerName, string deviceName)
         {
-            string query = $@"select developers.client_name as developer_name , devices.client_name as device_name from developer_authorizations da 
-                            join clients devices on da.device_id = devices.id
-                            join clients as developers on da.developer_id = developers.id
-                            where developers.client_name = '{developerName}' and devices.client_name = '{deviceName}';";
-
-            DataTable dt = GetDatatable(query, "developer_authorizations", out fault);
-
-            if (dt.Rows.Count == 1)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return dbContext.DeveloperAuthorizations
+                .Any(c => c.Developer.ClientName == developerName && c.Device.ClientName == deviceName);
         }
 
-        public static void InsertDeviceConnectionRequest(string deviceName,string developerName, bool isRequest, out bool fault)
+        public static void InsertDeviceConnectionRequest(sshondemandContext dbContext, string deviceName, string developerName)
         {
-            string query =
-                            $@" BEGIN;
-                                SELECT devices.id, requesters.id ,{ (isRequest ? "true" : "false") }, '{CurrentTimestampString()}'
-                                FROM clients as devices
-                                CROSS JOIN clients as requesters 
-                                WHERE devices.client_name = '{deviceName}' and requesters.client_name = '{developerName}'
-                                AND NOT EXISTS ( select true from device_requests where client_id = devices.id );
+            var result = dbContext.DeviceRequests
+                .SingleOrDefault(connectionRequest => 
+                    connectionRequest.Client.ClientName == deviceName &&
+                    connectionRequest.RequestedByClient.ClientName == developerName &&
+                    !dbContext.DeviceRequests.Any(existingRequest => existingRequest.ClientId == connectionRequest.ClientId)
+                    );
 
-                                UPDATE device_requests
-                                SET is_requested = { (isRequest ? "true" : "false") },
-                                	requested_by_client_id = requesters.id,
-                                    request_timestamp = '{CurrentTimestampString()}'
-                                FROM clients as devices
-                                CROSS JOIN clients as requesters 
-                                WHERE devices.client_name = '{deviceName}' and requesters.client_name = '{developerName}'
-                                and client_id = devices.id;
-                                COMMIT;
-                            ";
-
-            QueryDatabase(query, out fault);
+            if (result != null)
+            {
+                result.IsRequested = true;
+                dbContext.SaveChanges();
+            }
         }
 
         #endregion
