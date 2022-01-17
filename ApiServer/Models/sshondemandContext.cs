@@ -55,11 +55,14 @@ namespace ApiServer.Models
 
             modelBuilder.Entity<ClientConnection>(entity =>
             {
-                entity.HasNoKey();
+                entity.HasKey(e => e.ClientId)
+                    .HasName("client_connections_pk");
 
                 entity.ToTable("client_connections");
 
-                entity.Property(e => e.ClientId).HasColumnName("client_id");
+                entity.Property(e => e.ClientId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("client_id");
 
                 entity.Property(e => e.ConnectionTimestamp).HasColumnName("connection_timestamp");
 
@@ -74,14 +77,16 @@ namespace ApiServer.Models
                 entity.Property(e => e.Status).HasColumnName("status");
 
                 entity.HasOne(d => d.Client)
-                    .WithMany()
-                    .HasForeignKey(d => d.ClientId)
+                    .WithOne(p => p.ClientConnection)
+                    .HasForeignKey<ClientConnection>(d => d.ClientId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_client_id");
             });
 
             modelBuilder.Entity<DeveloperAuthorization>(entity =>
             {
-                entity.HasNoKey();
+                entity.HasKey(e => new { e.DeveloperId, e.DeviceId })
+                    .HasName("developer_authorizations_pk");
 
                 entity.ToTable("developer_authorizations");
 
@@ -90,25 +95,26 @@ namespace ApiServer.Models
                 entity.Property(e => e.DeviceId).HasColumnName("device_id");
 
                 entity.HasOne(d => d.Developer)
-                    .WithMany()
+                    .WithMany(p => p.DeveloperAuthorizationDevelopers)
                     .HasForeignKey(d => d.DeveloperId)
-                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("fk_developer_id");
 
                 entity.HasOne(d => d.Device)
-                    .WithMany()
+                    .WithMany(p => p.DeveloperAuthorizationDevices)
                     .HasForeignKey(d => d.DeviceId)
-                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("fk_device_id");
             });
 
             modelBuilder.Entity<DeviceRequest>(entity =>
             {
-                entity.HasNoKey();
+                entity.HasKey(e => e.ClientId)
+                    .HasName("device_requests_pk");
 
                 entity.ToTable("device_requests");
 
-                entity.Property(e => e.ClientId).HasColumnName("client_id");
+                entity.Property(e => e.ClientId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("client_id");
 
                 entity.Property(e => e.IsRequested).HasColumnName("is_requested");
 
@@ -117,12 +123,13 @@ namespace ApiServer.Models
                 entity.Property(e => e.RequestedByClientId).HasColumnName("requested_by_client_id");
 
                 entity.HasOne(d => d.Client)
-                    .WithMany()
-                    .HasForeignKey(d => d.ClientId)
+                    .WithOne(p => p.DeviceRequestClient)
+                    .HasForeignKey<DeviceRequest>(d => d.ClientId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_client_id");
 
                 entity.HasOne(d => d.RequestedByClient)
-                    .WithMany()
+                    .WithMany(p => p.DeviceRequestRequestedByClients)
                     .HasForeignKey(d => d.RequestedByClientId)
                     .HasConstraintName("fk_requester_client_id");
             });

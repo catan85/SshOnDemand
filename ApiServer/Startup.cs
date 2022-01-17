@@ -46,7 +46,7 @@ namespace ApiServer
             });
 
             services.AddDbContext<sshondemandContext>(options =>
-                    options.UseNpgsql("Host=localhost;Database=sshondemand;Username=postgres;Password=postgres"));
+                    options.UseNpgsql(AppSettings.DbConnectionString));
 
         }
 

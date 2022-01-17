@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ApiServer.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -20,32 +21,30 @@ namespace ApiServer.Filters
     public class HmacAuthResponseAttribute : ResultFilterAttribute
     {
 
-
-        private static Dictionary<string, string> allowedApps = new Dictionary<string, string>();
+        private static Dictionary<string, string> clientsSharedKeys = new Dictionary<string, string>();
         private readonly UInt64 requestMaxAgeInSeconds = 300; //Means 5 min
         private readonly string authenticationScheme = "hmacauth";
 
 
         public HmacAuthResponseAttribute()
         {
-            if (allowedApps.Count == 0)
+
+        }
+
+        private void UpdateSharedKeys()
+        {
+            using (sshondemandContext dbContext = new sshondemandContext())
             {
-                bool fault = false;
-                DataTable clientsTable = PostgreSQLClass.GetClientsDatatable(out fault);
-
-                if (fault)
-                    throw new Exception("Cannot read clients table");
-
-                foreach (DataRow row in clientsTable.Rows)
+                clientsSharedKeys.Clear();
+                foreach (var client in dbContext.Clients)
                 {
-                    allowedApps.Add((string)row["client_name"], (string)row["client_key"]);
+                    clientsSharedKeys.Add(client.ClientName, client.ClientKey);
                 }
             }
         }
 
         public override void OnResultExecuting(ResultExecutingContext context)
         {
-
             if (!(context.Result is UnauthorizedResult))
             {
 
@@ -95,7 +94,13 @@ namespace ApiServer.Filters
                 var authArray = authHeader.Split(":");
 
                 var APPId = authArray[0];
-                var APIKey = allowedApps[APPId];
+
+                if (!clientsSharedKeys.ContainsKey(APPId))
+                {
+                    UpdateSharedKeys();
+                }
+
+                var APIKey = clientsSharedKeys[APPId];
 
                 //Creating the raw string by combining
                 //APPId, request Http Method, request Uri, request TimeStamp, nonce, request Content Base64 String

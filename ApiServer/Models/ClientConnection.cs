@@ -7,7 +7,7 @@ namespace ApiServer.Models
 {
     public partial class ClientConnection
     {
-        public int? ClientId { get; set; }
+        public int ClientId { get; set; }
         public short? Status { get; set; }
         public DateTime? ConnectionTimestamp { get; set; }
         public string SshIp { get; set; }

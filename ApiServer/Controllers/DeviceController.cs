@@ -52,7 +52,7 @@ namespace ApiServer.Controllers
 
                     // Inserting connection details to database
 
-                    PostgreSQLClass.SetDeviceConnectionDetails(deviceIdentity, connectionDetails, out fault);
+                    PostgreSQLClass.SetDeviceConnectionDetails(dbContext, deviceIdentity, connectionDetails);
 
                     return Ok(connectionDetails);
                 }

@@ -29,17 +29,6 @@ namespace ApiServer
         private static NpgsqlConnection DbConnection;
 
         #region common
-        public static DataTable GetClientsDatatable(out bool fault)
-        {
-            string query =
-                            $@"SELECT 
-                                client_name, client_key 
-                            FROM 
-                                clients;";
-            string tablename = "clients";
-
-            return GetDatatable(query, tablename, out fault);
-        }
 
         public static DeviceConnectionStatus CheckDeviceConnection(sshondemandContext dbContext, string deviceName)
         {
@@ -75,27 +64,61 @@ namespace ApiServer
             }
         }
 
-        public static void SetDeviceConnectionDetails(string deviceName, DeviceConnectionStatus status, out bool fault)
+        public static void SetDeviceConnectionDetails(sshondemandContext dbContext, string deviceName, DeviceConnectionStatus status)
         {
-            string query = $@" BEGIN;
-								INSERT INTO client_connections (client_id, status, connection_timestamp, ssh_ip, ssh_port, ssh_user, ssh_forwarding )
-                                SELECT clients.id, { (short)status.State }, '{CurrentTimestampString()}', '{status.SshHost}', {status.SshPort}, '{status.SshUser}', {status.SshForwarding}
-                                FROM clients where client_name = '{deviceName}'
-                                AND NOT EXISTS ( select true from device_requests where client_id = clients.id );
+          
+            var device = dbContext.Clients.SingleOrDefault(c => c.ClientName == deviceName);
+            var existDeviceRequest = dbContext.DeviceRequests.Any(r => r.ClientId == device.Id);
 
-                                UPDATE client_connections SET 
-                                    client_id = clients.id, 
-                                    status = { (short)status.State },
-                                    connection_timestamp = '{CurrentTimestampString()}', 
-                                    ssh_ip = '{ status.SshHost}', 
-                                    ssh_port = '{ status.SshPort}',
-                                    ssh_user = '{ status.SshUser}',
-                                    ssh_forwarding = '{status.SshForwarding}'
-                                FROM clients where client_name = '{deviceName}'
-                                    and client_id = clients.id;
-                                COMMIT;
-                            ";
-            QueryDatabase(query, out fault);
+            if (!existDeviceRequest)
+            {
+                var newConnection = new ClientConnection() {
+                    Client = device,
+                    Status = (short)status.State,
+                    ConnectionTimestamp = DateTime.UtcNow,
+                    SshIp = status.SshHost,
+                    SshPort = status.SshPort,
+                    SshUser = status.SshUser,
+                    SshForwarding = status.SshForwarding
+                };
+                dbContext.ClientConnections.Add(newConnection);
+            }
+
+            var deviceConnection = dbContext.ClientConnections.SingleOrDefault(c => c.ClientId == device.Id);
+            if (deviceConnection != null)
+            {
+                deviceConnection.Status = (short)status.State;
+                deviceConnection.ConnectionTimestamp = DateTime.UtcNow;
+                deviceConnection.SshIp = status.SshHost;
+                deviceConnection.SshPort = status.SshPort;
+                deviceConnection.SshUser = status.SshUser;
+                deviceConnection.SshForwarding = status.SshForwarding;
+            }
+
+            dbContext.SaveChanges();
+
+            /*
+          string query = $@" BEGIN;
+                              INSERT INTO client_connections (client_id, status, connection_timestamp, ssh_ip, ssh_port, ssh_user, ssh_forwarding )
+                              SELECT clients.id, { (short)status.State }, '{CurrentTimestampString()}', '{status.SshHost}', {status.SshPort}, '{status.SshUser}', {status.SshForwarding}
+                              FROM clients where client_name = '{deviceName}'
+                              AND NOT EXISTS ( select true from device_requests where client_id = clients.id );
+
+                              UPDATE client_connections SET 
+                                  client_id = clients.id, 
+                                  status = { (short)status.State },
+                                  connection_timestamp = '{CurrentTimestampString()}', 
+                                  ssh_ip = '{ status.SshHost}', 
+                                  ssh_port = '{ status.SshPort}',
+                                  ssh_user = '{ status.SshUser}',
+                                  ssh_forwarding = '{status.SshForwarding}'
+                              FROM clients where client_name = '{deviceName}'
+                                  and client_id = clients.id;
+                              COMMIT;
+                          ";
+
+          bool fault = false;
+          QueryDatabase(query, out fault);*/
         }
 
         public static void SetDeviceConnectionState(string deviceName, ClientConnectionState state, out bool fault)
@@ -142,12 +165,16 @@ namespace ApiServer
                 .SingleOrDefault(connectionRequest => 
                     connectionRequest.Client.ClientName == deviceName &&
                     connectionRequest.RequestedByClient.ClientName == developerName &&
-                    !dbContext.DeviceRequests.Any(existingRequest => existingRequest.ClientId == connectionRequest.ClientId)
+                    !dbContext.DeviceRequests.Any(existingRequest => 
+                            existingRequest.ClientId == connectionRequest.ClientId &&
+                            existingRequest.IsRequested == true
+                            )
                     );
 
             if (result != null)
             {
                 result.IsRequested = true;
+                result.RequestTimestamp = DateTime.UtcNow;
                 dbContext.SaveChanges();
             }
         }

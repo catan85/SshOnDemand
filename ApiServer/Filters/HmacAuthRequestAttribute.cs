@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ApiServer.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -29,21 +30,23 @@ namespace ApiServer.Filters
         private static Dictionary<string, string> clientsSharedKeys = new Dictionary<string, string>();
         private readonly UInt64 requestMaxAgeInSeconds = 300; //Means 5 min
         private readonly string authenticationScheme = "hmacauth";
-        
+   
         public HmacAuthRequestAttribute()
         {
-            if (clientsSharedKeys.Count == 0)
-            {
-                bool fault = false;
-                DataTable clientsTable = PostgreSQLClass.GetClientsDatatable(out fault);
 
-                foreach (DataRow row in clientsTable.Rows)
+        }
+
+        private void UpdateSharedKeys()
+        {
+            using (sshondemandContext dbContext = new sshondemandContext())
+            {
+                clientsSharedKeys.Clear();
+                foreach (var client in dbContext.Clients)
                 {
-                    clientsSharedKeys.Add((string)row["client_name"], (string)row["client_key"]);
+                    clientsSharedKeys.Add(client.ClientName, client.ClientKey);
                 }
             }
         }
-
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {
@@ -52,7 +55,7 @@ namespace ApiServer.Filters
             if (!StringValues.IsNullOrEmpty(authString) && authString.ToString().StartsWith("hmacauth "))
             {
                 // si rimuove l'intestazione della firma in modo da poter ottenere solo i parametri utili alla verifica
-                var authHeader = authString.ToString().Replace("hmacauth ", "");
+                var authHeader = authString.ToString().Replace($"{authenticationScheme} ", "");
 
                 var authArray = authHeader.Split(":");
 
@@ -101,7 +104,13 @@ namespace ApiServer.Filters
             // lettura del metodo (GET/POST/PUT/PATH/DELETE)
             string requestHttpMethod = req.Method;
 
-            // Verifica se il client è tra la lista dei device prelevati dal db
+            // Se il client non è tra quelli abilitati aggiorno la cache
+            if (!clientsSharedKeys.ContainsKey(clientId))
+            {
+                UpdateSharedKeys();
+            }
+
+            // Se ancora il client non è tra la lista dei device prelevati dal db torno false
             if (!clientsSharedKeys.ContainsKey(clientId))
             {
                 return false;
