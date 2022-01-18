@@ -29,7 +29,7 @@ namespace DeveloperClient
                     // Reset the connection if the client is connected with the wrong port (old connections)
                     if (ssh.ConnectionState == SshConnectionState.Open && ssh.CurrentForwardingPort != deviceConnectionDetails.SshForwarding)
                     {
-                        ssh.CloseSshConnection();
+                        ssh.CloseSshConnection("wrong port");
                     }
 
 

@@ -23,7 +23,7 @@ namespace DeviceClient
                     // Reset the connection if the client is connected with the wrong port (old connections)
                     if (ssh.ConnectionState == SshConnectionState.Open && ssh.CurrentForwardingPort != connectionDetails.SshForwarding)
                     {
-                        ssh.CloseSshConnection();
+                        ssh.CloseSshConnection("wrong port and is open");
                     }
 
                     if ((connectionDetails.State == ClientConnectionState.Ready) && ssh.ConnectionState != SshConnectionState.Open)
@@ -36,12 +36,12 @@ namespace DeviceClient
                     }
                     else if ((connectionDetails.State == ClientConnectionState.NotRequest) && (ssh.ConnectionState == SshConnectionState.Open))
                     {
-                        ssh.CloseSshConnection();
+                        ssh.CloseSshConnection("Not request and is open");
                     }
                 }
                 else
                 {
-                    ssh.CloseSshConnection();
+                    ssh.CloseSshConnection("no connection details");
                 }
 
                 // Connection status is beign constantly setted beacuse the server constantly check the last timestamp 

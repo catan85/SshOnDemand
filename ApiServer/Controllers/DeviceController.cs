@@ -32,12 +32,12 @@ namespace ApiServer.Controllers
 
             // Check device connection authorization
             // superflua --> bool isDeviceAuthorized = PostgreSQLClass.IsDeviceConnectionAuthorized(deviceIdentity, out fault);  --> già fatto nel filter
-            bool isDeviceConnectionRequested = PostgreSQLClass.IsDeviceConnectionRequested(dbContext, deviceIdentity);
+            bool isDeviceConnectionRequested = Queries.IsDeviceConnectionRequested(dbContext, deviceIdentity);
 
             if (isDeviceConnectionRequested && !fault)
             {
                 // Verifica dello stato della connessione, se è già attiva non devo fare nulla
-                DeviceConnectionStatus connectionStatus = PostgreSQLClass.CheckDeviceConnection(dbContext, deviceIdentity);
+                DeviceConnectionStatus connectionStatus = Queries.CheckDeviceConnection(dbContext, deviceIdentity);
 
                 // Altrimenti devo fare in modo che venga attivata la nuova connessione
                 if (connectionStatus.State != ClientConnectionState.Connected)
@@ -52,7 +52,7 @@ namespace ApiServer.Controllers
 
                     // Inserting connection details to database
 
-                    PostgreSQLClass.SetDeviceConnectionDetails(dbContext, deviceIdentity, connectionDetails);
+                    Queries.SetDeviceConnectionDetails(dbContext, deviceIdentity, connectionDetails);
 
                     return Ok(connectionDetails);
                 }
@@ -75,20 +75,11 @@ namespace ApiServer.Controllers
         [HttpPost(template: "DeviceSetConnectionState")]
         public IActionResult DeviceSetConnectionState([FromBody] ClientConnectionState deviceConnectionState)
         {
-            bool fault = false;
             string deviceIdentity = (string)HttpContext.Items["ClientName"];
 
-            PostgreSQLClass.SetDeviceConnectionState(deviceIdentity, deviceConnectionState, out fault);
+            Queries.SetDeviceConnectionState(dbContext, deviceIdentity, deviceConnectionState);
 
-            if (!fault)
-
-            {
-                return Ok($"Status changed to: {deviceConnectionState}");
-            }
-            else
-            {
-                return StatusCode((int)HttpStatusCode.InternalServerError, "Database error");
-            }
+            return Ok($"Status changed to: {deviceConnectionState}");
         }
 
 
@@ -96,7 +87,7 @@ namespace ApiServer.Controllers
 
         private DeviceConnectionStatus GenerateSshConnectionDetails()
         {
-            bool fault = false;
+
 
             // Inserting device connection details
             DeviceConnectionStatus deviceConnectionDetails = new DeviceConnectionStatus();
@@ -105,10 +96,10 @@ namespace ApiServer.Controllers
             deviceConnectionDetails.SshPort = AppSettings.SshPort;
             deviceConnectionDetails.State = ClientConnectionState.Ready;
 
-            List<int> usedPorts = PostgreSQLClass.GetForwardingPorts(out fault);
-
-            if (!fault)
+            using(sshondemandContext dbContext = new sshondemandContext())
             {
+                List<int> usedPorts = Queries.GetForwardingPorts(dbContext);
+
                 for (int i = AppSettings.SshFirstPort; i < AppSettings.SshFirstPort + 1000; i++ )
                 {
                     if (!usedPorts.Contains(i))
@@ -120,11 +111,6 @@ namespace ApiServer.Controllers
 
                 return deviceConnectionDetails;
             }
-            else
-            {
-                throw new Exception("Exception in max forward port determination");
-            }
-
         }
     }
 }

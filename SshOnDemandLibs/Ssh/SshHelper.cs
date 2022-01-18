@@ -85,9 +85,9 @@ namespace SshOnDemandLibs
             LaunchCommand(command);
         }
 
-        public void CloseSshConnection()
+        public void CloseSshConnection(string reason)
         {
-            Console.WriteLine("Connection Closed");
+            Console.WriteLine($"Connection Closed [NOT_IMPL]: {reason}");
         }
 
 

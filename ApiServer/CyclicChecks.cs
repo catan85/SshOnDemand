@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ApiServer.Models;
 using SshOnDemandLibs;
 using SshOnDemandLibs.Entities;
 
@@ -31,8 +32,11 @@ namespace ApiServer
         {
             bool fault = false;
             List<string> deactivatedClients = new List<string>();
-            PostgreSQLClass.DeactivateOldRequests(15, out fault, out deactivatedClients);
-
+            using (sshondemandContext dbContext = new sshondemandContext())
+            {
+                Queries.DeactivateOldRequests(dbContext, 15, out deactivatedClients);
+            }
+            
             SshConnectionData connectionData = Utilities.CreateSshConnectionData();
 
             foreach (string deactivatedClient in deactivatedClients)
@@ -43,9 +47,11 @@ namespace ApiServer
 
         private void CheckActiveDeviceConnections()
         {
-            bool fault = false;
             List<string> deactivatedClients = new List<string>();
-            PostgreSQLClass.ResetOldConnections(15, out fault, out deactivatedClients);
+            using (sshondemandContext dbContext = new sshondemandContext())
+            {
+                Queries.ResetOldConnections(dbContext, 15, out deactivatedClients);
+            }
 
             SshConnectionData connectionData = Utilities.CreateSshConnectionData();
 

@@ -31,12 +31,12 @@ namespace ApiServer.Controllers
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = PostgreSQLClass.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, deviceName);
+            bool isDeveloperAuthorized = Queries.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, deviceName);
 
             if (isDeveloperAuthorized)
             {
                 // Inserting device connection request
-                PostgreSQLClass.InsertDeviceConnectionRequest(dbContext, deviceName, developerIdentity);
+                Queries.InsertDeviceConnectionRequest(dbContext, deviceName, developerIdentity);
                 return Ok("Request has been set");
             }
             else  if (!isDeveloperAuthorized)
@@ -61,13 +61,13 @@ namespace ApiServer.Controllers
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = PostgreSQLClass.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, args.DeviceName);
+            bool isDeveloperAuthorized = Queries.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, args.DeviceName);
 
             if (isDeveloperAuthorized)
             {
 
                 // Checking device connection status
-                DeviceConnectionStatus status = PostgreSQLClass.CheckDeviceConnection(dbContext, args.DeviceName);
+                DeviceConnectionStatus status = Queries.CheckDeviceConnection(dbContext, args.DeviceName);
 
 
                 if (status.State == ClientConnectionState.Ready || status.State == ClientConnectionState.Connected)
