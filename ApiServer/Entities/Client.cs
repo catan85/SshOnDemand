@@ -13,6 +13,11 @@ namespace ApiServer.Entities
         public string ClientKey { get; set; }
         public string ClientName { get; set; }
 
+        public Client()
+        {
+
+        }
+
         public Client(Models.Client client)
         {
             this.Id = client.Id;

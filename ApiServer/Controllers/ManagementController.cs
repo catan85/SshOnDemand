@@ -25,15 +25,44 @@ namespace ApiServer.Controllers
         }
 
         [HttpPost(template: "AddDevice")]
-        public bool AddDevice(Entities.Client device)
+        public bool AddDevice([FromBody]Entities.Client newDevice)
         {
-            return false;
+            Models.Client deviceModel = new Models.Client();
+            deviceModel.ClientKey = newDevice.ClientKey;
+            deviceModel.ClientName = newDevice.ClientName;
+            deviceModel.IsDevice = true;
+            deviceModel.IsDeveloper = false;
+
+            this.dbContext.Clients.Add(deviceModel);
+            this.dbContext.SaveChanges();
+
+            return true;
         }
 
         [HttpDelete(template: "DeleteDevice")]
-        public bool DeleteDevice(Entities.Client device)
+        public bool DeleteDevice(int deviceId)
         {
-            return false;
+            var clientToRemove = this.dbContext.Clients.SingleOrDefault(c => c.Id == deviceId);
+            if (clientToRemove != null)
+            {
+                var authsToRemove = this.dbContext.DeveloperAuthorizations.Where(a => a.DeviceId == deviceId);
+                this.dbContext.DeveloperAuthorizations.RemoveRange(authsToRemove);
+
+                var devReqToRemove = this.dbContext.DeviceRequests.Where(r => r.ClientId == deviceId);
+                this.dbContext.DeviceRequests.RemoveRange(devReqToRemove);
+               
+                var cliConnToRemove = this.dbContext.ClientConnections.Where(c => c.ClientId == deviceId);
+                this.dbContext.ClientConnections.RemoveRange(cliConnToRemove);
+
+                this.dbContext.Clients.Remove(clientToRemove);
+
+                this.dbContext.SaveChanges();
+                return true;
+            }
+            else
+            {
+                return false;
+            }    
         }
 
         [HttpGet(template: "GetAllDeveloper")]
@@ -43,13 +72,21 @@ namespace ApiServer.Controllers
         }
 
         [HttpPost(template: "AddDeveloper")]
-        public bool AddDeveloper(Entities.Client developer)
+        public bool AddDeveloper([FromBody]Entities.Client newDeveloper)
         {
-            return false;
+            Models.Client developerModel = new Models.Client();
+            developerModel.ClientKey = newDeveloper.ClientKey;
+            developerModel.ClientName = newDeveloper.ClientName;
+            developerModel.IsDeveloper = true;
+
+            this.dbContext.Clients.Add(developerModel);
+            this.dbContext.SaveChanges();
+
+            return true;
         }
 
         [HttpDelete(template: "DeleteDeveloper")]
-        public bool DeleteDeveloper(Entities.Client developer)
+        public bool DeleteDeveloper(int developerId)
         { 
             return false;
         }
