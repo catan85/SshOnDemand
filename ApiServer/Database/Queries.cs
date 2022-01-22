@@ -120,11 +120,7 @@
             var result = dbContext.DeviceRequests
                 .SingleOrDefault(connectionRequest => 
                     connectionRequest.Client.ClientName == deviceName &&
-                    connectionRequest.RequestedByClient.ClientName == developerName &&
-                    !dbContext.DeviceRequests.Any(existingRequest => 
-                            existingRequest.ClientId == connectionRequest.ClientId &&
-                            existingRequest.IsRequested == true
-                            )
+                    connectionRequest.RequestedByClient.ClientName == developerName
                     );
 
             if (result != null)

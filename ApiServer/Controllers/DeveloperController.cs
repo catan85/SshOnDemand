@@ -35,7 +35,7 @@ namespace ApiServer.Controllers
 
             if (isDeveloperAuthorized)
             {
-                // Inserting device connection request
+                // Inserting device connection request or updating the existing one
                 Queries.InsertDeviceConnectionRequest(dbContext, deviceName, developerIdentity);
                 return Ok("Request has been set");
             }
