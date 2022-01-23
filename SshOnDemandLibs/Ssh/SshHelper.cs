@@ -22,12 +22,12 @@ namespace SshOnDemandLibs
    
         }
 
-        public SshConnectionState ConnectionState
+        public EnumSshConnectionState ConnectionState
         {
             get
             {
 
-                var status =  this.Connection != null && this.Connection.IsConnected? SshConnectionState.Open : SshConnectionState.Closed;
+                var status =  this.Connection != null && this.Connection.IsConnected? EnumSshConnectionState.Open : EnumSshConnectionState.Closed;
                 return status;
             }
         }
@@ -50,7 +50,7 @@ namespace SshOnDemandLibs
         public void OpenSshConnection(DeviceConnectionStatus connectionDetails)
         {
             SshConnectionData connectionData = new SshConnectionData();
-            connectionData.AuthenticationMode = SshAuthMode.WithCertificates;
+            connectionData.AuthenticationMode = EnumSshAuthMode.WithCertificates;
             connectionData.Host = connectionDetails.SshHost;
             connectionData.Port = connectionDetails.SshPort;
             connectionData.Username = connectionDetails.SshUser;
@@ -94,7 +94,7 @@ namespace SshOnDemandLibs
         private void Connect(SshConnectionData connectionData)
         {
             ConnectionInfo connectionInfo = null;
-            if (connectionData.AuthenticationMode == SshAuthMode.WithCertificates)
+            if (connectionData.AuthenticationMode == EnumSshAuthMode.WithCertificates)
             {
 
                 WritePrivateKeyToFile(connectionData.PrivateKey);
@@ -113,7 +113,7 @@ namespace SshOnDemandLibs
             );
 
             // Password based authentication
-            }else if (connectionData.AuthenticationMode == SshAuthMode.WithPassword)
+            }else if (connectionData.AuthenticationMode == EnumSshAuthMode.WithPassword)
             {
                 connectionInfo = new ConnectionInfo(connectionData.Host, connectionData.Port, connectionData.Username,
                 new AuthenticationMethod[]{

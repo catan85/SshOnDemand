@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace ApiServer.Models
+namespace ApiServer.Infrastructure.Models
 {
     public partial class sshondemandContext : DbContext
     {

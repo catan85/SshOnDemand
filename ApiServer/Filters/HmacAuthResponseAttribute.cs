@@ -1,4 +1,4 @@
-﻿using ApiServer.Models;
+﻿using ApiServer.Infrastructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;

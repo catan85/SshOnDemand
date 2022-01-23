@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ApiServer.Entities
+namespace ApiServer.Application.Entities
 {
     public class Client
     {
@@ -18,13 +18,5 @@ namespace ApiServer.Entities
 
         }
 
-        public Client(Models.Client client)
-        {
-            this.Id = client.Id;
-            this.ClientName = client.ClientName;
-            this.ClientKey = client.ClientKey;
-            this.IsDeveloper = client.IsDeveloper.Value;
-            this.IsDevice = client.IsDevice.Value;
-        }
     }
 }

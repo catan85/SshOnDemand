@@ -7,7 +7,7 @@ namespace SshOnDemandLibs.Entities
 
     public class SshConnectionData
     {
-        public SshAuthMode AuthenticationMode { get; set; }
+        public EnumSshAuthMode AuthenticationMode { get; set; }
 
         public string Host { get; set; }
 

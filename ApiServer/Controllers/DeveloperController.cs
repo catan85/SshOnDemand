@@ -4,7 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using ApiServer.Filters;
-using ApiServer.Models;
+using ApiServer.Infrastructure;
+using ApiServer.Infrastructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SshOnDemandLibs;
@@ -16,9 +17,11 @@ namespace ApiServer.Controllers
     public class DeveloperController : ControllerBase
     {
         private readonly sshondemandContext dbContext;
-        public DeveloperController(sshondemandContext dbContext)
+        private readonly Queries queries;
+        public DeveloperController(sshondemandContext dbContext, Queries queries)
         {
             this.dbContext = dbContext;
+            this.queries = queries;
         }
 
         [HmacAuthRequest]
@@ -31,12 +34,12 @@ namespace ApiServer.Controllers
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = Queries.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, deviceName);
+            bool isDeveloperAuthorized = this.queries.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, deviceName);
 
             if (isDeveloperAuthorized)
             {
                 // Inserting device connection request or updating the existing one
-                Queries.InsertDeviceConnectionRequest(dbContext, deviceName, developerIdentity);
+                this.queries.InsertDeviceConnectionRequest(dbContext, deviceName, developerIdentity);
                 return Ok("Request has been set");
             }
             else  if (!isDeveloperAuthorized)
@@ -61,16 +64,16 @@ namespace ApiServer.Controllers
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = Queries.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, args.DeviceName);
+            bool isDeveloperAuthorized = this.queries.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, args.DeviceName);
 
             if (isDeveloperAuthorized)
             {
 
                 // Checking device connection status
-                DeviceConnectionStatus status = Queries.CheckDeviceConnection(dbContext, args.DeviceName);
+                Core.Entities.DeviceConnectionStatus status = this.queries.CheckDeviceConnection(dbContext, args.DeviceName);
 
 
-                if (status.State == ClientConnectionState.Ready || status.State == ClientConnectionState.Connected)
+                if (status.State == EnumClientConnectionState.Ready || status.State == EnumClientConnectionState.Connected)
                 {
                     // Saving Developer public key to allow its connection to the ssh server
                     SshConnectionData connectionData = Utilities.CreateSshConnectionData();

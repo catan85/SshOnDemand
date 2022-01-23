@@ -147,7 +147,7 @@ namespace HmacTestClient
         private static async Task<HttpResponseMessage> DeviceSetActiveConnectionStatus(HttpClient client)
         {
             Console.WriteLine("Imposta stato di connessione del client ATTIVO");
-            return await client.PostAsJsonAsync(apiBaseAddress + "DeviceSetConnectionState", ClientConnectionState.Connected);
+            return await client.PostAsJsonAsync(apiBaseAddress + "DeviceSetConnectionState", EnumClientConnectionState.Connected);
         }
 
     }

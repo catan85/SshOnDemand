@@ -21,12 +21,12 @@ namespace DeviceClient
                 if (connectionDetails != null)
                 {
                     // Reset the connection if the client is connected with the wrong port (old connections)
-                    if (ssh.ConnectionState == SshConnectionState.Open && ssh.CurrentForwardingPort != connectionDetails.SshForwarding)
+                    if (ssh.ConnectionState == EnumSshConnectionState.Open && ssh.CurrentForwardingPort != connectionDetails.SshForwarding)
                     {
                         ssh.CloseSshConnection("wrong port and is open");
                     }
 
-                    if ((connectionDetails.State == ClientConnectionState.Ready) && ssh.ConnectionState != SshConnectionState.Open)
+                    if ((connectionDetails.State == EnumClientConnectionState.Ready) && ssh.ConnectionState != EnumSshConnectionState.Open)
                     {
                         // Attesa di 2 secondi per fare in modo che OpenSSH acquisisca i certificati che abbiamo appena caricato
                         System.Threading.Thread.Sleep(5000);
@@ -34,7 +34,7 @@ namespace DeviceClient
                         ssh.OpenSshConnection(connectionDetails);
                         ssh.EnableRemoteForwarding(connectionDetails);
                     }
-                    else if ((connectionDetails.State == ClientConnectionState.NotRequest) && (ssh.ConnectionState == SshConnectionState.Open))
+                    else if ((connectionDetails.State == EnumClientConnectionState.NotRequest) && (ssh.ConnectionState == EnumSshConnectionState.Open))
                     {
                         ssh.CloseSshConnection("Not request and is open");
                     }
@@ -46,11 +46,11 @@ namespace DeviceClient
 
                 // Connection status is beign constantly setted beacuse the server constantly check the last timestamp 
                 // If the client goes offline, the server will mark the device as not connected automatically
-                if (ssh.ConnectionState == SshConnectionState.Open)
+                if (ssh.ConnectionState == EnumSshConnectionState.Open)
                 {
                     await http.SetActiveDeviceConnection();
                 }
-                else if (connectionDetails != null && (connectionDetails.State != ClientConnectionState.NotRequest))
+                else if (connectionDetails != null && (connectionDetails.State != EnumClientConnectionState.NotRequest))
                 {
                     await http.SetClosedSshConnectionState();
                 }

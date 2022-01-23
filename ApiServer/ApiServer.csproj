@@ -23,11 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ApiServer.Application\ApiServer.Application.csproj" />
+    <ProjectReference Include="..\ApiServer.Infrastructure\ApiServer.Infrastructure.csproj" />
     <ProjectReference Include="..\SshOnDemandLibs\SshOnDemandLibs.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

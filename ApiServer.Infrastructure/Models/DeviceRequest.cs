@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable disable
 
-namespace ApiServer.Models
+namespace ApiServer.Infrastructure.Models
 {
     public partial class DeviceRequest
     {

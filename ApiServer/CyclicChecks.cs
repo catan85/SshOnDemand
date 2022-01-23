@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ApiServer.Models;
+using ApiServer.Infrastructure;
+using ApiServer.Infrastructure.Models;
 using SshOnDemandLibs;
 using SshOnDemandLibs.Entities;
 
@@ -32,9 +33,12 @@ namespace ApiServer
         {
             bool fault = false;
             List<string> deactivatedClients = new List<string>();
+            #warning VIOLAZIONE DEPENDENCY INVERSION
             using (sshondemandContext dbContext = new sshondemandContext())
             {
-                Queries.DeactivateOldRequests(dbContext, 15, out deactivatedClients);
+                #warning VIOLAZIONE DEPENDENCY INVERSION
+                Queries q = new Queries();
+                q.DeactivateOldRequests(dbContext, 15, out deactivatedClients);
             }
             
             SshConnectionData connectionData = Utilities.CreateSshConnectionData();
@@ -50,7 +54,9 @@ namespace ApiServer
             List<string> deactivatedClients = new List<string>();
             using (sshondemandContext dbContext = new sshondemandContext())
             {
-                Queries.ResetOldConnections(dbContext, 15, out deactivatedClients);
+                #warning VIOLAZIONE DEPENDENCY INVERSION
+                Queries q = new Queries();
+                q.ResetOldConnections(dbContext, 15, out deactivatedClients);
             }
 
             SshConnectionData connectionData = Utilities.CreateSshConnectionData();

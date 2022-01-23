@@ -1,6 +1,7 @@
-﻿using ApiServer.Entities;
-using ApiServer.Models;
-using ApiServer.Responses;
+﻿using ApiServer.Application.Mapper;
+using ApiServer.Application.Responses;
+using ApiServer.Infrastructure;
+using ApiServer.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,21 +14,22 @@ namespace ApiServer.Controllers
     public class ManagementController : ControllerBase
     {
         private readonly sshondemandContext dbContext;
+       
         public ManagementController(sshondemandContext dbContext)
         {
             this.dbContext = dbContext;
         }
 
         [HttpGet(template: "GetAllDevices")]
-        public IEnumerable<Entities.Client> GetAllDevices()
+        public IEnumerable<Application.Entities.Client> GetAllDevices()
         {
-            return this.dbContext.Clients.Where(c => c.IsDevice == true).Select(c => new Entities.Client(c));
+            return this.dbContext.Clients.Where(c => c.IsDevice == true).Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
         }
 
         [HttpPost(template: "AddDevice")]
-        public bool AddDevice([FromBody]Entities.Client newDevice)
+        public bool AddDevice([FromBody] Application.Entities.Client newDevice)
         {
-            Models.Client deviceModel = new Models.Client();
+            Infrastructure.Models.Client deviceModel = new Infrastructure.Models.Client();
             deviceModel.ClientKey = newDevice.ClientKey;
             deviceModel.ClientName = newDevice.ClientName;
             deviceModel.IsDevice = true;
@@ -66,15 +68,15 @@ namespace ApiServer.Controllers
         }
 
         [HttpGet(template: "GetAllDeveloper")]
-        public IEnumerable<Entities.Client> GetAllDeveloper()
+        public IEnumerable<Application.Entities.Client> GetAllDeveloper()
         {
-            return this.dbContext.Clients.Where(c => c.IsDeveloper == true).Select(c => new Entities.Client(c));
+            return this.dbContext.Clients.Where(c => c.IsDeveloper == true).Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
         }
 
         [HttpPost(template: "AddDeveloper")]
-        public bool AddDeveloper([FromBody]Entities.Client newDeveloper)
+        public bool AddDeveloper([FromBody] Application.Entities.Client newDeveloper)
         {
-            Models.Client developerModel = new Models.Client();
+            Client developerModel = new Client();
             developerModel.ClientKey = newDeveloper.ClientKey;
             developerModel.ClientName = newDeveloper.ClientName;
             developerModel.IsDeveloper = true;
@@ -100,10 +102,10 @@ namespace ApiServer.Controllers
 
             var response = new ResponseGetDeveloperAuthorizations();
             response.DeveloperId = developerId;
-            response.AllowedDevices = new List<Entities.Client>();
+            response.AllowedDevices = new List<Application.Entities.Client>();
             foreach (var auth in authorizations)
             {
-                response.AllowedDevices.Add(new Entities.Client(auth.Device));
+                response.AllowedDevices.Add(ClientMapper.Mapper.Map<Application.Entities.Client>(auth.Device));
             }
             return response;
   

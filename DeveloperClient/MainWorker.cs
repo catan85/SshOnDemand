@@ -27,20 +27,20 @@ namespace DeveloperClient
                 if(deviceConnectionDetails != null)
                 {
                     // Reset the connection if the client is connected with the wrong port (old connections)
-                    if (ssh.ConnectionState == SshConnectionState.Open && ssh.CurrentForwardingPort != deviceConnectionDetails.SshForwarding)
+                    if (ssh.ConnectionState == EnumSshConnectionState.Open && ssh.CurrentForwardingPort != deviceConnectionDetails.SshForwarding)
                     {
                         ssh.CloseSshConnection("wrong port");
                     }
 
 
-                    if (deviceConnectionDetails.State != ClientConnectionState.Connected)
+                    if (deviceConnectionDetails.State != EnumClientConnectionState.Connected)
                     {
                         logger.Output("Waiting for device connection..");
                         waiting = true;
                     }
                     else
                     {
-                        if (ssh.ConnectionState != SshConnectionState.Open)
+                        if (ssh.ConnectionState != EnumSshConnectionState.Open)
                         {
                             logger.Debug("Device has been connected, connecting developer to the ssh server..");
 

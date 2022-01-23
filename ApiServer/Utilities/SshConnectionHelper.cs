@@ -12,7 +12,7 @@ namespace ApiServer
         public static SshConnectionData CreateSshConnectionData()
         {
             SshConnectionData connectionData = new SshConnectionData();
-            connectionData.AuthenticationMode = SshAuthMode.WithPassword;
+            connectionData.AuthenticationMode = EnumSshAuthMode.WithPassword;
             connectionData.Host = AppSettings.SshHost;
             connectionData.Port = AppSettings.SshPort;
             connectionData.Username = AppSettings.SshUser;

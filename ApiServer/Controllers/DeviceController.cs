@@ -4,7 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using ApiServer.Filters;
-using ApiServer.Models;
+using ApiServer.Infrastructure;
+using ApiServer.Infrastructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SshOnDemandLibs;
@@ -15,9 +16,11 @@ namespace ApiServer.Controllers
     public class DeviceController : ControllerBase
     {
         private readonly sshondemandContext dbContext;
-        public DeviceController(sshondemandContext dbContext)
+        private readonly Queries queries;
+        public DeviceController(sshondemandContext dbContext, Queries queries)
         {
             this.dbContext = dbContext;
+            this.queries = queries;
         }
 
         [HmacAuthRequest]
@@ -32,15 +35,15 @@ namespace ApiServer.Controllers
 
             // Check device connection authorization
             // superflua --> bool isDeviceAuthorized = PostgreSQLClass.IsDeviceConnectionAuthorized(deviceIdentity, out fault);  --> già fatto nel filter
-            bool isDeviceConnectionRequested = Queries.IsDeviceConnectionRequested(dbContext, deviceIdentity);
+            bool isDeviceConnectionRequested = this.queries.IsDeviceConnectionRequested(dbContext, deviceIdentity);
 
             if (isDeviceConnectionRequested && !fault)
             {
                 // Verifica dello stato della connessione, se è già attiva non devo fare nulla
-                DeviceConnectionStatus connectionStatus = Queries.CheckDeviceConnection(dbContext, deviceIdentity);
+                Core.Entities.DeviceConnectionStatus connectionStatus = this.queries.CheckDeviceConnection(dbContext, deviceIdentity);
 
                 // Altrimenti devo fare in modo che venga attivata la nuova connessione
-                if (connectionStatus.State != ClientConnectionState.Connected)
+                if (connectionStatus.State != EnumClientConnectionState.Connected)
                 {
 
                     SshConnectionData connectionData = Utilities.CreateSshConnectionData();
@@ -48,11 +51,11 @@ namespace ApiServer.Controllers
                     SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "device_" + deviceIdentity, devicePublicKey, AppSettings.SshAuthorizedKeysPath, connectionStatus.SshForwarding);
 
                     // Generating Ssh connection details
-                    DeviceConnectionStatus connectionDetails = GenerateSshConnectionDetails();
+                    Core.Entities.DeviceConnectionStatus connectionDetails = GenerateSshConnectionDetails();
 
                     // Inserting connection details to database
 
-                    Queries.SetDeviceConnectionDetails(dbContext, deviceIdentity, connectionDetails);
+                    this.queries.SetDeviceConnectionDetails(dbContext, deviceIdentity, connectionDetails);
 
                     return Ok(connectionDetails);
                 }
@@ -61,7 +64,7 @@ namespace ApiServer.Controllers
             }
             else if (!isDeviceConnectionRequested)
             {
-                DeviceConnectionStatus connectionStatus = new DeviceConnectionStatus() { State = ClientConnectionState.NotRequest };
+                DeviceConnectionStatus connectionStatus = new DeviceConnectionStatus() { State = EnumClientConnectionState.NotRequest };
                 return Ok(connectionStatus);
             }
             else
@@ -73,11 +76,11 @@ namespace ApiServer.Controllers
         [HmacAuthRequest]
         [HmacAuthResponse]
         [HttpPost(template: "DeviceSetConnectionState")]
-        public IActionResult DeviceSetConnectionState([FromBody] ClientConnectionState deviceConnectionState)
+        public IActionResult DeviceSetConnectionState([FromBody] EnumClientConnectionState deviceConnectionState)
         {
             string deviceIdentity = (string)HttpContext.Items["ClientName"];
 
-            Queries.SetDeviceConnectionState(dbContext, deviceIdentity, deviceConnectionState);
+            this.queries.SetDeviceConnectionState(dbContext, deviceIdentity, deviceConnectionState);
 
             return Ok($"Status changed to: {deviceConnectionState}");
         }
@@ -85,20 +88,20 @@ namespace ApiServer.Controllers
 
 
 
-        private DeviceConnectionStatus GenerateSshConnectionDetails()
+        private Core.Entities.DeviceConnectionStatus GenerateSshConnectionDetails()
         {
 
 
             // Inserting device connection details
-            DeviceConnectionStatus deviceConnectionDetails = new DeviceConnectionStatus();
+            Core.Entities.DeviceConnectionStatus deviceConnectionDetails = new Core.Entities.DeviceConnectionStatus();
             deviceConnectionDetails.SshHost = AppSettings.SshHost;
             deviceConnectionDetails.SshUser = AppSettings.SshUser;
             deviceConnectionDetails.SshPort = AppSettings.SshPort;
-            deviceConnectionDetails.State = ClientConnectionState.Ready;
+            deviceConnectionDetails.State = EnumClientConnectionState.Ready;
 
             using(sshondemandContext dbContext = new sshondemandContext())
             {
-                List<int> usedPorts = Queries.GetForwardingPorts(dbContext);
+                List<int> usedPorts = this.queries.GetForwardingPorts(dbContext);
 
                 for (int i = AppSettings.SshFirstPort; i < AppSettings.SshFirstPort + 1000; i++ )
                 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ApiServer.Responses
+namespace ApiServer.Application.Responses
 {
     public class ResponseGetDeveloperAuthorizations
     {

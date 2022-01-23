@@ -1,0 +1,18 @@
+I've tried to adopt a clean architecture (simplified)
+So, the structure is the following
+
+Presentation 
+	>	Application 
+		> Infrastructure 
+			> Core
+ApiServer		
+	>	ApiServer.Application
+		>	ApiServer.Infrastructure
+			>	ApiServer.Core
+
+The inner layers cannot know the external layers.
+
+Application contains the entities used by the presentation (request, response, common entities)
+Infrastructure contains the entities used by the database (entity framework in this case)
+Core contains the domain level entities, the core functionalities that shouldn't know nothing about the external layers
+

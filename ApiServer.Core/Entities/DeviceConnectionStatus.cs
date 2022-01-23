@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using SshOnDemandLibs;
+using System;
 
-
-namespace SshOnDemandLibs
+namespace ApiServer.Core.Entities
 {
     [Serializable]
     public class DeviceConnectionStatus

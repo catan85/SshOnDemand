@@ -19,7 +19,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TpmTest", "TpmTest\TpmTest.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceProvisioning", "DeviceProvisioning\DeviceProvisioning.csproj", "{E48A6C5A-5DB7-4599-A9C7-C5088FAB52C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiServer", "ApiServer\ApiServer.csproj", "{911BDFF5-7A33-43E9-A44A-082B1467B9CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiServer", "ApiServer\ApiServer.csproj", "{911BDFF5-7A33-43E9-A44A-082B1467B9CB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiServer", "ApiServer", "{E5F16ECE-1210-40F9-9C48-4B2EA75FDA0E}"
+	ProjectSection(SolutionItems) = preProject
+		Note struttura progetto.txt = Note struttura progetto.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiServer.Application", "ApiServer.Application\ApiServer.Application.csproj", "{225B7287-D5B3-4089-AE9A-D754E0237E46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiServer.Infrastructure", "ApiServer.Infrastructure\ApiServer.Infrastructure.csproj", "{75ADE210-64B1-48D0-AEC4-80FD226B4976}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiServer.Core", "ApiServer.Core\ApiServer.Core.csproj", "{944E5AED-9688-4D46-A65B-11C2205E07C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,9 +74,27 @@ Global
 		{911BDFF5-7A33-43E9-A44A-082B1467B9CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{911BDFF5-7A33-43E9-A44A-082B1467B9CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{911BDFF5-7A33-43E9-A44A-082B1467B9CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{225B7287-D5B3-4089-AE9A-D754E0237E46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{225B7287-D5B3-4089-AE9A-D754E0237E46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{225B7287-D5B3-4089-AE9A-D754E0237E46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{225B7287-D5B3-4089-AE9A-D754E0237E46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75ADE210-64B1-48D0-AEC4-80FD226B4976}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75ADE210-64B1-48D0-AEC4-80FD226B4976}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75ADE210-64B1-48D0-AEC4-80FD226B4976}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75ADE210-64B1-48D0-AEC4-80FD226B4976}.Release|Any CPU.Build.0 = Release|Any CPU
+		{944E5AED-9688-4D46-A65B-11C2205E07C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{944E5AED-9688-4D46-A65B-11C2205E07C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{944E5AED-9688-4D46-A65B-11C2205E07C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{944E5AED-9688-4D46-A65B-11C2205E07C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{911BDFF5-7A33-43E9-A44A-082B1467B9CB} = {E5F16ECE-1210-40F9-9C48-4B2EA75FDA0E}
+		{225B7287-D5B3-4089-AE9A-D754E0237E46} = {E5F16ECE-1210-40F9-9C48-4B2EA75FDA0E}
+		{75ADE210-64B1-48D0-AEC4-80FD226B4976} = {E5F16ECE-1210-40F9-9C48-4B2EA75FDA0E}
+		{944E5AED-9688-4D46-A65B-11C2205E07C6} = {E5F16ECE-1210-40F9-9C48-4B2EA75FDA0E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D87715FD-BCB1-4754-BBD2-5F4CF2BB0F46}

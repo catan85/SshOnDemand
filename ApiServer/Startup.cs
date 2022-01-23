@@ -1,4 +1,5 @@
-using ApiServer.Models;
+using ApiServer.Infrastructure;
+using ApiServer.Infrastructure.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -47,6 +48,8 @@ namespace ApiServer
 
             services.AddDbContext<sshondemandContext>(options =>
                     options.UseNpgsql(AppSettings.DbConnectionString));
+
+            services.AddTransient<Queries>();
 
         }
 

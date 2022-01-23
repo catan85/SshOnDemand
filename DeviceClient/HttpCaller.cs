@@ -59,18 +59,18 @@ namespace DeviceClient
 
         public async Task SetActiveDeviceConnection()
         {
-            string state = await SetDeviceConnection(client, ClientConnectionState.Connected);
+            string state = await SetDeviceConnection(client, EnumClientConnectionState.Connected);
             Console.WriteLine(state);
         }
 
         public async Task SetClosedSshConnectionState()
         {
-            string state = await SetDeviceConnection(client, ClientConnectionState.ClosedSsh);
+            string state = await SetDeviceConnection(client, EnumClientConnectionState.ClosedSsh);
             Console.WriteLine(state);
         }
 
 
-        private async Task<string> SetDeviceConnection(HttpClient client, ClientConnectionState connectionState)
+        private async Task<string> SetDeviceConnection(HttpClient client, EnumClientConnectionState connectionState)
         {
             HttpResponseMessage response = null;
 
