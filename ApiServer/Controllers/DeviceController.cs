@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ApiServer.Filters;
 using ApiServer.Infrastructure;
 using ApiServer.Infrastructure.Models;
+using ApiServer.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SshOnDemandLibs;
@@ -15,12 +16,15 @@ namespace ApiServer.Controllers
 {
     public class DeviceController : ControllerBase
     {
-        private readonly sshondemandContext dbContext;
+        private readonly ClientConnectionsRepository clientConnections;
+
         private readonly Queries queries;
-        public DeviceController(sshondemandContext dbContext, Queries queries)
+        public DeviceController(
+                Queries queries
+                , ClientConnectionsRepository clientConnections)
         {
-            this.dbContext = dbContext;
             this.queries = queries;
+            this.clientConnections = clientConnections;
         }
 
         [HmacAuthRequest]
@@ -28,16 +32,16 @@ namespace ApiServer.Controllers
         [HttpPost(template: "DeviceCheckRemoteConnectionRequest")]
         public IActionResult DeviceCheckRemoteConnectionRequest([FromBody] string devicePublicKey)
         {
-            bool fault = false;
+   
             string deviceIdentity = (string)HttpContext.Items["ClientName"];
 
             Console.WriteLine("Device identity is: " + deviceIdentity);
 
-            // Check device connection authorization
-            // superflua --> bool isDeviceAuthorized = PostgreSQLClass.IsDeviceConnectionAuthorized(deviceIdentity, out fault);  --> già fatto nel filter
-            bool isDeviceConnectionRequested = this.queries.IsDeviceConnectionRequested( deviceIdentity);
+            var deviceConnectionRequest = clientConnections.GetByClientName(deviceIdentity);
 
-            if (isDeviceConnectionRequested && !fault)
+            bool isDeviceConnectionRequested = deviceConnectionRequest != null;
+
+            if (isDeviceConnectionRequested)
             {
                 // Verifica dello stato della connessione, se è già attiva non devo fare nulla
                 Core.Entities.DeviceConnectionStatus connectionStatus = this.queries.CheckDeviceConnection( deviceIdentity);

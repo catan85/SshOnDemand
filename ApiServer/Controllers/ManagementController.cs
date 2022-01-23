@@ -3,6 +3,7 @@ using ApiServer.Application.Requests;
 using ApiServer.Application.Responses;
 using ApiServer.Infrastructure;
 using ApiServer.Infrastructure.Models;
+using ApiServer.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -16,67 +17,52 @@ namespace ApiServer.Controllers
     {
         private readonly sshondemandContext dbContext;
         private readonly Queries queries;
-
-        public ManagementController(sshondemandContext dbContext, Queries queries)
+        private readonly ClientRepository clientRepository;
+        public ManagementController(sshondemandContext dbContext, Queries queries, ClientRepository clientRepository)
         {
             this.dbContext = dbContext;
             this.queries = queries;
+            this.clientRepository = clientRepository;
         }
 
         [HttpGet(template: "GetAllDevices")]
         public IEnumerable<Application.Entities.Client> GetAllDevices()
         {
-            return this.dbContext.Clients.Where(c => c.IsDevice == true).Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
+            // esempio accesso generico
+            // return this.clientRepository.GetAll().Where(c => c.IsDevice == true).Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
+
+            // accesso da repository custom
+            return clientRepository.GetAllDevices().Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
         }
 
         [HttpPost(template: "AddDevice")]
         public bool AddDevice([FromBody] Application.Requests.ManagementRequestAddDevice newDevice)
         {
-            return this.queries.AddDevice(ClientMapper.Mapper.Map<Client>(newDevice));
+            return this.clientRepository.Add(ClientMapper.Mapper.Map<Client>(newDevice));
         }
 
         [HttpDelete(template: "DeleteDevice")]
         public bool DeleteDevice(int deviceId)
         {
-            var clientToRemove = this.dbContext.Clients.SingleOrDefault(c => c.Id == deviceId);
-            if (clientToRemove != null)
-            {
-                var authsToRemove = this.dbContext.DeveloperAuthorizations.Where(a => a.DeviceId == deviceId);
-                this.dbContext.DeveloperAuthorizations.RemoveRange(authsToRemove);
-
-                var devReqToRemove = this.dbContext.DeviceRequests.Where(r => r.ClientId == deviceId);
-                this.dbContext.DeviceRequests.RemoveRange(devReqToRemove);
-               
-                var cliConnToRemove = this.dbContext.ClientConnections.Where(c => c.ClientId == deviceId);
-                this.dbContext.ClientConnections.RemoveRange(cliConnToRemove);
-
-                this.dbContext.Clients.Remove(clientToRemove);
-
-                this.dbContext.SaveChanges();
-                return true;
-            }
-            else
-            {
-                return false;
-            }    
+            return this.clientRepository.DeleteDeviceById(deviceId); 
         }
 
         [HttpGet(template: "GetAllDeveloper")]
         public IEnumerable<Application.Entities.Client> GetAllDeveloper()
         {
-            return this.dbContext.Clients.Where(c => c.IsDeveloper == true).Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
+            return clientRepository.GetAllDeveloper().Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
         }
 
         [HttpPost(template: "AddDeveloper")]
         public bool AddDeveloper([FromBody] ManagementRequestAddDeveloper newDeveloper)
         {
-            return this.queries.AddDeveloper(ClientMapper.Mapper.Map<Client>(newDeveloper));
+            return this.clientRepository.Add(ClientMapper.Mapper.Map<Client>(newDeveloper));
         }
 
         [HttpDelete(template: "DeleteDeveloper")]
         public bool DeleteDeveloper(int developerId)
-        { 
-            return false;
+        {
+            return this.clientRepository.DeleteDeveloperById(developerId);
         }
 
         [HttpGet(template: "GetDeveloperAuthorizations")]

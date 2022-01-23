@@ -175,21 +175,5 @@
 
         #endregion
 
-        #region management
-        public bool AddDevice(Client newDevice)
-        {
-            dbContext.Clients.Add(newDevice);
-            dbContext.SaveChanges();
-            return true;
-        }
-
-        public bool AddDeveloper(Client newDeveloper)
-        {
-            dbContext.Clients.Add(newDeveloper);
-            dbContext.SaveChanges();
-            return true;
-        }
-        #endregion
-
     }
 }

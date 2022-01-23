@@ -1,5 +1,6 @@
 using ApiServer.Infrastructure;
 using ApiServer.Infrastructure.Models;
+using ApiServer.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -50,6 +51,13 @@ namespace ApiServer
                     options.UseNpgsql(AppSettings.DbConnectionString));
 
             services.AddTransient<Queries>();
+
+            // esempio di aggiunta di un repository standard, senza customizzazioni
+            services.AddTransient<BaseRepository<ClientConnection>>();
+
+            // aggiunta di un repo custom
+            services.AddTransient<ClientRepository>();
+            services.AddTransient<ClientConnectionsRepository>();
 
         }
 
