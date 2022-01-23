@@ -37,8 +37,8 @@ namespace ApiServer
             using (sshondemandContext dbContext = new sshondemandContext())
             {
                 #warning VIOLAZIONE DEPENDENCY INVERSION
-                Queries q = new Queries();
-                q.DeactivateOldRequests(dbContext, 15, out deactivatedClients);
+                Queries q = new Queries(dbContext);
+                q.DeactivateOldRequests( 15, out deactivatedClients);
             }
             
             SshConnectionData connectionData = Utilities.CreateSshConnectionData();
@@ -55,8 +55,8 @@ namespace ApiServer
             using (sshondemandContext dbContext = new sshondemandContext())
             {
                 #warning VIOLAZIONE DEPENDENCY INVERSION
-                Queries q = new Queries();
-                q.ResetOldConnections(dbContext, 15, out deactivatedClients);
+                Queries q = new Queries(dbContext);
+                q.ResetOldConnections(15, out deactivatedClients);
             }
 
             SshConnectionData connectionData = Utilities.CreateSshConnectionData();

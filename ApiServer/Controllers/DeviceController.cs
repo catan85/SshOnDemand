@@ -35,12 +35,12 @@ namespace ApiServer.Controllers
 
             // Check device connection authorization
             // superflua --> bool isDeviceAuthorized = PostgreSQLClass.IsDeviceConnectionAuthorized(deviceIdentity, out fault);  --> già fatto nel filter
-            bool isDeviceConnectionRequested = this.queries.IsDeviceConnectionRequested(dbContext, deviceIdentity);
+            bool isDeviceConnectionRequested = this.queries.IsDeviceConnectionRequested( deviceIdentity);
 
             if (isDeviceConnectionRequested && !fault)
             {
                 // Verifica dello stato della connessione, se è già attiva non devo fare nulla
-                Core.Entities.DeviceConnectionStatus connectionStatus = this.queries.CheckDeviceConnection(dbContext, deviceIdentity);
+                Core.Entities.DeviceConnectionStatus connectionStatus = this.queries.CheckDeviceConnection( deviceIdentity);
 
                 // Altrimenti devo fare in modo che venga attivata la nuova connessione
                 if (connectionStatus.State != EnumClientConnectionState.Connected)
@@ -55,7 +55,7 @@ namespace ApiServer.Controllers
 
                     // Inserting connection details to database
 
-                    this.queries.SetDeviceConnectionDetails(dbContext, deviceIdentity, connectionDetails);
+                    this.queries.SetDeviceConnectionDetails(deviceIdentity, connectionDetails);
 
                     return Ok(connectionDetails);
                 }
@@ -80,7 +80,7 @@ namespace ApiServer.Controllers
         {
             string deviceIdentity = (string)HttpContext.Items["ClientName"];
 
-            this.queries.SetDeviceConnectionState(dbContext, deviceIdentity, deviceConnectionState);
+            this.queries.SetDeviceConnectionState(deviceIdentity, deviceConnectionState);
 
             return Ok($"Status changed to: {deviceConnectionState}");
         }
@@ -101,7 +101,7 @@ namespace ApiServer.Controllers
 
             using(sshondemandContext dbContext = new sshondemandContext())
             {
-                List<int> usedPorts = this.queries.GetForwardingPorts(dbContext);
+                List<int> usedPorts = this.queries.GetForwardingPorts();
 
                 for (int i = AppSettings.SshFirstPort; i < AppSettings.SshFirstPort + 1000; i++ )
                 {

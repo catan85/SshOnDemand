@@ -1,4 +1,5 @@
 ﻿using ApiServer.Application.Mapper;
+using ApiServer.Application.Requests;
 using ApiServer.Application.Responses;
 using ApiServer.Infrastructure;
 using ApiServer.Infrastructure.Models;
@@ -14,10 +15,12 @@ namespace ApiServer.Controllers
     public class ManagementController : ControllerBase
     {
         private readonly sshondemandContext dbContext;
-       
-        public ManagementController(sshondemandContext dbContext)
+        private readonly Queries queries;
+
+        public ManagementController(sshondemandContext dbContext, Queries queries)
         {
             this.dbContext = dbContext;
+            this.queries = queries;
         }
 
         [HttpGet(template: "GetAllDevices")]
@@ -27,18 +30,9 @@ namespace ApiServer.Controllers
         }
 
         [HttpPost(template: "AddDevice")]
-        public bool AddDevice([FromBody] Application.Entities.Client newDevice)
+        public bool AddDevice([FromBody] Application.Requests.ManagementRequestAddDevice newDevice)
         {
-            Infrastructure.Models.Client deviceModel = new Infrastructure.Models.Client();
-            deviceModel.ClientKey = newDevice.ClientKey;
-            deviceModel.ClientName = newDevice.ClientName;
-            deviceModel.IsDevice = true;
-            deviceModel.IsDeveloper = false;
-
-            this.dbContext.Clients.Add(deviceModel);
-            this.dbContext.SaveChanges();
-
-            return true;
+            return this.queries.AddDevice(ClientMapper.Mapper.Map<Client>(newDevice));
         }
 
         [HttpDelete(template: "DeleteDevice")]
@@ -74,17 +68,9 @@ namespace ApiServer.Controllers
         }
 
         [HttpPost(template: "AddDeveloper")]
-        public bool AddDeveloper([FromBody] Application.Entities.Client newDeveloper)
+        public bool AddDeveloper([FromBody] ManagementRequestAddDeveloper newDeveloper)
         {
-            Client developerModel = new Client();
-            developerModel.ClientKey = newDeveloper.ClientKey;
-            developerModel.ClientName = newDeveloper.ClientName;
-            developerModel.IsDeveloper = true;
-
-            this.dbContext.Clients.Add(developerModel);
-            this.dbContext.SaveChanges();
-
-            return true;
+            return this.queries.AddDeveloper(ClientMapper.Mapper.Map<Client>(newDeveloper));
         }
 
         [HttpDelete(template: "DeleteDeveloper")]
@@ -94,13 +80,13 @@ namespace ApiServer.Controllers
         }
 
         [HttpGet(template: "GetDeveloperAuthorizations")]
-        public ResponseGetDeveloperAuthorizations GetDeveloperAuthorizations(int developerId)
+        public ManagementResponseGetDeveloperAuthorizations GetDeveloperAuthorizations(int developerId)
         {
             var authorizations = this.dbContext.DeveloperAuthorizations
                 .Where(c => c.DeveloperId == developerId)
                 .Include(c => c.Device);
 
-            var response = new ResponseGetDeveloperAuthorizations();
+            var response = new ManagementResponseGetDeveloperAuthorizations();
             response.DeveloperId = developerId;
             response.AllowedDevices = new List<Application.Entities.Client>();
             foreach (var auth in authorizations)
@@ -108,8 +94,14 @@ namespace ApiServer.Controllers
                 response.AllowedDevices.Add(ClientMapper.Mapper.Map<Application.Entities.Client>(auth.Device));
             }
             return response;
-  
-
         }
+
+        /*
+        [HttpPost(template: "UpdateDeveloperAuthorizations")]
+        public bool UpdateDeveloperAuthorizations(ManagementRequestUpdateDeveloperAuthorizations body)
+        {
+          
+        }
+        */
     }
 }

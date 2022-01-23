@@ -34,12 +34,12 @@ namespace ApiServer.Controllers
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = this.queries.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, deviceName);
+            bool isDeveloperAuthorized = this.queries.IsDeveloperConnectionToDeviceAuthorized( developerIdentity, deviceName);
 
             if (isDeveloperAuthorized)
             {
                 // Inserting device connection request or updating the existing one
-                this.queries.InsertDeviceConnectionRequest(dbContext, deviceName, developerIdentity);
+                this.queries.InsertDeviceConnectionRequest( deviceName, developerIdentity);
                 return Ok("Request has been set");
             }
             else  if (!isDeveloperAuthorized)
@@ -64,13 +64,13 @@ namespace ApiServer.Controllers
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = this.queries.IsDeveloperConnectionToDeviceAuthorized(dbContext, developerIdentity, args.DeviceName);
+            bool isDeveloperAuthorized = this.queries.IsDeveloperConnectionToDeviceAuthorized( developerIdentity, args.DeviceName);
 
             if (isDeveloperAuthorized)
             {
 
                 // Checking device connection status
-                Core.Entities.DeviceConnectionStatus status = this.queries.CheckDeviceConnection(dbContext, args.DeviceName);
+                Core.Entities.DeviceConnectionStatus status = this.queries.CheckDeviceConnection( args.DeviceName);
 
 
                 if (status.State == EnumClientConnectionState.Ready || status.State == EnumClientConnectionState.Connected)

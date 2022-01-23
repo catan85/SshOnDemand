@@ -13,6 +13,17 @@ namespace ApiServer.Application.Mapper
         public ClientMappingProfile()
         {
             CreateMap<Entities.Client, Infrastructure.Models.Client>().ReverseMap();
+            CreateMap<Requests.ManagementRequestAddDevice, Infrastructure.Models.Client>()
+                .AfterMap((s, d) => {
+                    d.IsDevice = true;
+                    d.IsDeveloper = false;
+                    });
+            CreateMap<Requests.ManagementRequestAddDeveloper, Infrastructure.Models.Client>()
+                .AfterMap((s, d) => {
+                    d.IsDevice = false;
+                    d.IsDeveloper = true;
+                });
+            
         }
     }
 }
