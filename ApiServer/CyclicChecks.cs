@@ -11,12 +11,16 @@ namespace ApiServer
 {
     public class CyclicChecks
     {
-        public CyclicChecks()
+        readonly AppSettings settings;
+
+        public CyclicChecks(AppSettings settings)
         {
             System.Timers.Timer t = new System.Timers.Timer(1000);
             t.AutoReset = true;
             t.Elapsed += T_Elapsed;
             t.Start();
+
+            this.settings = settings;
         }
 
         private void T_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -31,22 +35,15 @@ namespace ApiServer
 
         private void CheckActiveDeveloperRequests()
         {
-            bool fault = false;
-            List<string> deactivatedClients = new List<string>();
-            #warning VIOLAZIONE DEPENDENCY INVERSION
+            List<string> deactivatedClientNames = new List<string>();
             using (sshondemandContext dbContext = new sshondemandContext())
             {
-                #warning VIOLAZIONE DEPENDENCY INVERSION
                 Queries q = new Queries(dbContext);
-                q.DeactivateOldRequests( 15, out deactivatedClients);
+                q.DeactivateOldRequests( 15, out deactivatedClientNames);
             }
-            
-            SshConnectionData connectionData = Utilities.CreateSshConnectionData();
 
-            foreach (string deactivatedClient in deactivatedClients)
-            {
-                SshKeysManagement.UnloadKey(connectionData, deactivatedClient, AppSettings.SshAuthorizedKeysPath);
-            }
+            Ssh ssh = new Ssh(settings);
+            ssh.UnloadClientKeys(deactivatedClientNames);
         }
 
         private void CheckActiveDeviceConnections()
@@ -54,17 +51,11 @@ namespace ApiServer
             List<string> deactivatedClients = new List<string>();
             using (sshondemandContext dbContext = new sshondemandContext())
             {
-                #warning VIOLAZIONE DEPENDENCY INVERSION
                 Queries q = new Queries(dbContext);
                 q.ResetOldConnections(15, out deactivatedClients);
             }
-
-            SshConnectionData connectionData = Utilities.CreateSshConnectionData();
-
-            foreach (string deactivatedClient in deactivatedClients)
-            {
-                SshKeysManagement.UnloadKey(connectionData, deactivatedClient, AppSettings.SshAuthorizedKeysPath);
-            }
+            Ssh ssh = new Ssh(settings);
+            ssh.UnloadClientKeys(deactivatedClients);
         }
     }
 }

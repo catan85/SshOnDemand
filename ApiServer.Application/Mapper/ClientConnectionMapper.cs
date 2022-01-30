@@ -12,7 +12,6 @@ namespace ApiServer.Application.Mapper
         private static readonly Lazy<IMapper> Lazy = new Lazy<IMapper>(() => {
             var config = new MapperConfiguration(cfg => {
                 cfg.AddProfile<ClientConnectionMappingProfile>();
-                cfg.ShouldMapProperty = p => p.GetMethod.IsPublic || p.GetMethod.IsAssembly;
             });
             var mapper = config.CreateMapper();
             return mapper;

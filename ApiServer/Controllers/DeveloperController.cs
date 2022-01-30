@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using ApiServer.Application.Mapper;
 using ApiServer.Filters;
 using ApiServer.Infrastructure;
 using ApiServer.Infrastructure.Models;
@@ -18,10 +19,13 @@ namespace ApiServer.Controllers
     {
         private readonly sshondemandContext dbContext;
         private readonly Queries queries;
-        public DeveloperController(sshondemandContext dbContext, Queries queries)
+        private readonly Ssh ssh;
+
+        public DeveloperController(sshondemandContext dbContext, Queries queries, Ssh ssh)
         {
             this.dbContext = dbContext;
             this.queries = queries;
+            this.ssh = ssh;
         }
 
         [HmacAuthRequest]
@@ -70,17 +74,16 @@ namespace ApiServer.Controllers
             {
 
                 // Checking device connection status
-                Core.Entities.DeviceConnectionStatus status = this.queries.CheckDeviceConnection( args.DeviceName);
+                var deviceConnection = this.queries.CheckDeviceConnection(args.DeviceName);
 
-
-                if (status.State == EnumClientConnectionState.Ready || status.State == EnumClientConnectionState.Connected)
+                Core.Entities.DeviceConnectionStatus currentDeviceConnectionStatus = ClientConnectionMapper.Mapper.Map<Core.Entities.DeviceConnectionStatus>(deviceConnection);
+                
+                if (currentDeviceConnectionStatus.State == EnumClientConnectionState.Ready || currentDeviceConnectionStatus.State == EnumClientConnectionState.Connected)
                 {
-                    // Saving Developer public key to allow its connection to the ssh server
-                    SshConnectionData connectionData = Utilities.CreateSshConnectionData();
-                    SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "developer_" + developerIdentity, args.DeveloperSshPublicKey, AppSettings.SshAuthorizedKeysPath, status.SshForwarding);
+                    this.ssh.SaveClientKeys(currentDeviceConnectionStatus.SshForwarding, "developer_" + developerIdentity, args.DeveloperSshPublicKey);
                 }
 
-                return Ok(status);
+                return Ok(currentDeviceConnectionStatus);
             }
             else if (!isDeveloperAuthorized)
             {

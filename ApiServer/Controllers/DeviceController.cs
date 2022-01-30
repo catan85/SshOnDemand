@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using ApiServer.Application.Mapper;
 using ApiServer.Filters;
 using ApiServer.Infrastructure;
 using ApiServer.Infrastructure.Models;
@@ -17,14 +18,20 @@ namespace ApiServer.Controllers
     public class DeviceController : ControllerBase
     {
         private readonly ClientConnectionsRepository clientConnections;
-
         private readonly Queries queries;
+        private readonly AppSettings settings;
+        private readonly Ssh ssh;
+
         public DeviceController(
-                Queries queries
-                , ClientConnectionsRepository clientConnections)
+                Queries queries,
+                ClientConnectionsRepository clientConnections,
+                AppSettings settings,
+                Ssh ssh)
         {
             this.queries = queries;
             this.clientConnections = clientConnections;
+            this.settings = settings;
+            this.ssh = ssh;
         }
 
         [HmacAuthRequest]
@@ -32,7 +39,8 @@ namespace ApiServer.Controllers
         [HttpPost(template: "DeviceCheckRemoteConnectionRequest")]
         public IActionResult DeviceCheckRemoteConnectionRequest([FromBody] string devicePublicKey)
         {
-   
+
+            #warning to move in infrastructure module
             string deviceIdentity = (string)HttpContext.Items["ClientName"];
 
             Console.WriteLine("Device identity is: " + deviceIdentity);
@@ -44,15 +52,14 @@ namespace ApiServer.Controllers
             if (isDeviceConnectionRequested)
             {
                 // Verifica dello stato della connessione, se è già attiva non devo fare nulla
-                Core.Entities.DeviceConnectionStatus connectionStatus = this.queries.CheckDeviceConnection( deviceIdentity);
+                var deviceConnection = this.queries.CheckDeviceConnection( deviceIdentity);
+
+                Core.Entities.DeviceConnectionStatus connectionStatus = ClientConnectionMapper.Mapper.Map<Core.Entities.DeviceConnectionStatus>(deviceConnection);
 
                 // Altrimenti devo fare in modo che venga attivata la nuova connessione
                 if (connectionStatus.State != EnumClientConnectionState.Connected)
                 {
-
-                    SshConnectionData connectionData = Utilities.CreateSshConnectionData();
-                    // Saving device public key to allow its connection to the ssh server
-                    SshKeysManagement.SaveKeys(connectionData, AppSettings.SshUser, "device_" + deviceIdentity, devicePublicKey, AppSettings.SshAuthorizedKeysPath, connectionStatus.SshForwarding);
+                    this.ssh.SaveClientKeys(connectionStatus.SshForwarding, "device_" + deviceIdentity, devicePublicKey);
 
                     // Generating Ssh connection details
                     Core.Entities.DeviceConnectionStatus connectionDetails = GenerateSshConnectionDetails();
@@ -90,24 +97,21 @@ namespace ApiServer.Controllers
         }
 
 
-
-
         private Core.Entities.DeviceConnectionStatus GenerateSshConnectionDetails()
         {
 
-
             // Inserting device connection details
             Core.Entities.DeviceConnectionStatus deviceConnectionDetails = new Core.Entities.DeviceConnectionStatus();
-            deviceConnectionDetails.SshHost = AppSettings.SshHost;
-            deviceConnectionDetails.SshUser = AppSettings.SshUser;
-            deviceConnectionDetails.SshPort = AppSettings.SshPort;
+            deviceConnectionDetails.SshHost = settings.SshHost;
+            deviceConnectionDetails.SshUser = settings.SshUser;
+            deviceConnectionDetails.SshPort = settings.SshPort;
             deviceConnectionDetails.State = EnumClientConnectionState.Ready;
 
             using(sshondemandContext dbContext = new sshondemandContext())
             {
                 List<int> usedPorts = this.queries.GetForwardingPorts();
 
-                for (int i = AppSettings.SshFirstPort; i < AppSettings.SshFirstPort + 1000; i++ )
+                for (int i = settings.SshFirstPort; i < settings.SshFirstPort + 1000; i++ )
                 {
                     if (!usedPorts.Contains(i))
                     {

@@ -20,15 +20,16 @@ namespace ApiServer
 {
     public class Startup
     {
-        CyclicChecks cyclicChecks = new CyclicChecks();
+        readonly CyclicChecks cyclicChecks;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
 
             AppSettings settings = new AppSettings();
-
             Configuration = configuration;
             configuration.Bind(settings);
+
+            cyclicChecks = new CyclicChecks(settings);
         }
 
         public IConfiguration Configuration { get; }
@@ -47,11 +48,18 @@ namespace ApiServer
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ApiServer50", Version = "v1" });
             });
 
+            // biniding della classe AppSettings definita in Infrastructure con il json
+            var config = new AppSettings();
+            Configuration.Bind(config);
+            services.AddSingleton(config);
+
             services.AddDbContext<sshondemandContext>(options =>
-                    options.UseNpgsql(AppSettings.DbConnectionString));
+                    options.UseNpgsql(config.DbConnectionString));
 
             services.AddTransient<Queries>();
+            services.AddTransient<Ssh>();
 
+        
             // esempio di aggiunta di un repository standard, senza customizzazioni
             services.AddTransient<BaseRepository<ClientConnection>>();
 

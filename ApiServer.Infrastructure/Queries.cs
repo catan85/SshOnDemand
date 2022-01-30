@@ -24,20 +24,12 @@
 
         #region common
 
-        public Core.Entities.DeviceConnectionStatus CheckDeviceConnection(string deviceName)
+        public ClientConnection CheckDeviceConnection(string deviceName)
         {
             Core.Entities.DeviceConnectionStatus status = new Core.Entities.DeviceConnectionStatus();
             status.State = EnumClientConnectionState.Disconnected;
             var connectionStatus = dbContext.ClientConnections.Where(c => c.Client.ClientName == deviceName).SingleOrDefault();
-            if (connectionStatus != null)
-            {
-                status.State = (EnumClientConnectionState)(connectionStatus.Status);
-                status.SshHost = connectionStatus.SshIp;
-                status.SshPort = connectionStatus.SshPort.Value;
-                status.SshForwarding = connectionStatus.SshForwarding.Value;
-                status.SshUser = connectionStatus.SshUser;
-            }
-            return status;
+            return connectionStatus;
         }
         #endregion
 
