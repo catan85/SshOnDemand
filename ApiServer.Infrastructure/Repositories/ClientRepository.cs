@@ -1,4 +1,5 @@
-﻿using ApiServer.Infrastructure.Models;
+﻿using ApiServer.Core;
+using ApiServer.Infrastructure.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,27 @@ namespace ApiServer.Infrastructure.Repositories
     public class ClientRepository : BaseRepository<Infrastructure.Models.Client>
     {
         public ClientRepository(sshondemandContext dbContext) : base(dbContext) { }
+
+        public Client AddClient(string clientName, bool isDevice)
+        {
+            if (this.dbContext.Clients.Any(c => c.ClientName == clientName))
+                return null;
+
+            KeysGenerator keyGen = new KeysGenerator();
+
+            var newClient = new Client()
+            {
+                ClientName = clientName,
+                IsDevice = isDevice,
+                IsDeveloper = !isDevice,
+                ClientKey = keyGen.GetNewKey()
+            };
+
+            this.dbContext.Clients.Add(newClient);
+            this.dbContext.SaveChanges();
+            return newClient;
+        }
+
 
         public IEnumerable<Client> GetAllDevices()
         {

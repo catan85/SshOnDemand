@@ -8,6 +8,6 @@ namespace ApiServer.Application.Responses
     public class ManagementResponseGetDeveloperAuthorizations
     {
         public int DeveloperId { get; set; }
-        public List<Entities.Client> AllowedDevices { get; set; }
+        public List<Core.Entities.Client> AllowedDevices { get; set; }
     }
 }

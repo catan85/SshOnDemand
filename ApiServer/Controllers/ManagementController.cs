@@ -26,37 +26,37 @@ namespace ApiServer.Controllers
         }
 
         [HttpGet(template: "GetAllDevices")]
-        public IEnumerable<Application.Entities.Client> GetAllDevices()
+        public IEnumerable<Core.Entities.Client> GetAllDevices()
         {
             // esempio accesso generico
             // return this.clientRepository.GetAll().Where(c => c.IsDevice == true).Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
 
             // accesso da repository custom
-            return clientRepository.GetAllDevices().Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
+            return clientRepository.GetAllDevices().Select(c => ClientMapper.Mapper.Map<Core.Entities.Client>(c));
         }
 
         [HttpPost(template: "AddDevice")]
-        public bool AddDevice([FromBody] Application.Requests.ManagementRequestAddDevice newDevice)
+        public Core.Entities.Client AddDevice([FromBody] Application.Requests.ManagementRequestAddDevice newDevice)
         {
-            return this.clientRepository.Add(ClientMapper.Mapper.Map<Client>(newDevice));
+            return ClientMapper.Mapper.Map<Core.Entities.Client>(this.clientRepository.AddClient(newDevice.ClientName, true));
         }
 
         [HttpDelete(template: "DeleteDevice")]
         public bool DeleteDevice(int deviceId)
         {
-            return this.clientRepository.DeleteDeviceById(deviceId); 
+            return this.clientRepository.DeleteDeviceById(deviceId);
         }
 
         [HttpGet(template: "GetAllDeveloper")]
-        public IEnumerable<Application.Entities.Client> GetAllDeveloper()
+        public IEnumerable<Core.Entities.Client> GetAllDeveloper()
         {
-            return clientRepository.GetAllDeveloper().Select(c => ClientMapper.Mapper.Map<Application.Entities.Client>(c));
+            return clientRepository.GetAllDeveloper().Select(c => ClientMapper.Mapper.Map<Core.Entities.Client>(c));
         }
 
         [HttpPost(template: "AddDeveloper")]
-        public bool AddDeveloper([FromBody] ManagementRequestAddDeveloper newDeveloper)
+        public Core.Entities.Client AddDeveloper([FromBody] ManagementRequestAddDeveloper newDeveloper)
         {
-            return this.clientRepository.Add(ClientMapper.Mapper.Map<Client>(newDeveloper));
+            return ClientMapper.Mapper.Map<Core.Entities.Client>(this.clientRepository.AddClient(newDeveloper.ClientName, false));
         }
 
         [HttpDelete(template: "DeleteDeveloper")]
@@ -74,20 +74,20 @@ namespace ApiServer.Controllers
 
             var response = new ManagementResponseGetDeveloperAuthorizations();
             response.DeveloperId = developerId;
-            response.AllowedDevices = new List<Application.Entities.Client>();
+            response.AllowedDevices = new List<Core.Entities.Client>();
             foreach (var auth in authorizations)
             {
-                response.AllowedDevices.Add(ClientMapper.Mapper.Map<Application.Entities.Client>(auth.Device));
+                response.AllowedDevices.Add(ClientMapper.Mapper.Map<Core.Entities.Client>(auth.Device));
             }
             return response;
         }
 
-        /*
+   /*
         [HttpPost(template: "UpdateDeveloperAuthorizations")]
         public bool UpdateDeveloperAuthorizations(ManagementRequestUpdateDeveloperAuthorizations body)
         {
           
         }
-        */
+     */
     }
 }

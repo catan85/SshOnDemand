@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ApiServer.Application.Entities
+namespace ApiServer.Core.Entities
 {
     public class Client
     {
