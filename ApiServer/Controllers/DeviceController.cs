@@ -18,17 +18,14 @@ namespace ApiServer.Controllers
     public class DeviceController : ControllerBase
     {
         private readonly ClientConnectionsRepository clientConnections;
-        private readonly Queries queries;
         private readonly AppSettings settings;
         private readonly Ssh ssh;
 
         public DeviceController(
-                Queries queries,
                 ClientConnectionsRepository clientConnections,
                 AppSettings settings,
                 Ssh ssh)
         {
-            this.queries = queries;
             this.clientConnections = clientConnections;
             this.settings = settings;
             this.ssh = ssh;
@@ -52,7 +49,7 @@ namespace ApiServer.Controllers
             if (isDeviceConnectionRequested)
             {
                 // Verifica dello stato della connessione, se è già attiva non devo fare nulla
-                var deviceConnection = this.queries.CheckDeviceConnection( deviceIdentity);
+                var deviceConnection = this.clientConnections.CheckDeviceConnection(deviceIdentity);
 
                 Core.Entities.DeviceConnectionStatus connectionStatus = ClientConnectionMapper.Mapper.Map<Core.Entities.DeviceConnectionStatus>(deviceConnection);
 
@@ -66,7 +63,7 @@ namespace ApiServer.Controllers
 
                     // Inserting connection details to database
 
-                    this.queries.SetDeviceConnectionDetails(deviceIdentity, connectionDetails);
+                    this.clientConnections.SetDeviceConnectionDetails(deviceIdentity, connectionDetails);
 
                     return Ok(connectionDetails);
                 }
@@ -91,7 +88,7 @@ namespace ApiServer.Controllers
         {
             string deviceIdentity = (string)HttpContext.Items["ClientName"];
 
-            this.queries.SetDeviceConnectionState(deviceIdentity, deviceConnectionState);
+            this.clientConnections.SetDeviceConnectionState(deviceIdentity, deviceConnectionState);
 
             return Ok($"Status changed to: {deviceConnectionState}");
         }
@@ -109,7 +106,7 @@ namespace ApiServer.Controllers
 
             using(sshondemandContext dbContext = new sshondemandContext())
             {
-                List<int> usedPorts = this.queries.GetForwardingPorts();
+                List<int> usedPorts = clientConnections.GetForwardingPorts();
 
                 for (int i = settings.SshFirstPort; i < settings.SshFirstPort + 1000; i++ )
                 {

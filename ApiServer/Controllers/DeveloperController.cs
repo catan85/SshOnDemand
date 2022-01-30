@@ -7,6 +7,7 @@ using ApiServer.Application.Mapper;
 using ApiServer.Filters;
 using ApiServer.Infrastructure;
 using ApiServer.Infrastructure.Models;
+using ApiServer.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SshOnDemandLibs;
@@ -17,15 +18,21 @@ namespace ApiServer.Controllers
 
     public class DeveloperController : ControllerBase
     {
-        private readonly sshondemandContext dbContext;
-        private readonly Queries queries;
         private readonly Ssh ssh;
+        private readonly ClientConnectionsRepository clientConnectionsRepository;
+        private readonly DeviceRequestsRepository deviceRequestsRepository;
+        private readonly DeveloperAuthorizationsRepository developerAuthorizationsRepository;
 
-        public DeveloperController(sshondemandContext dbContext, Queries queries, Ssh ssh)
+        public DeveloperController(
+            Ssh ssh,
+            ClientConnectionsRepository clientConnectionsRepository,
+            DeveloperAuthorizationsRepository developerAuthorizationsRepository,
+            DeviceRequestsRepository deviceRequestsRepository)
         {
-            this.dbContext = dbContext;
-            this.queries = queries;
             this.ssh = ssh;
+            this.developerAuthorizationsRepository = developerAuthorizationsRepository;
+            this.deviceRequestsRepository = deviceRequestsRepository;
+            this.clientConnectionsRepository = clientConnectionsRepository;
         }
 
         [HmacAuthRequest]
@@ -38,12 +45,13 @@ namespace ApiServer.Controllers
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = this.queries.IsDeveloperConnectionToDeviceAuthorized( developerIdentity, deviceName);
+            bool isDeveloperAuthorized = 
+                developerAuthorizationsRepository.IsDeveloperConnectionToDeviceAuthorized( developerIdentity, deviceName);
 
             if (isDeveloperAuthorized)
             {
                 // Inserting device connection request or updating the existing one
-                this.queries.InsertDeviceConnectionRequest( deviceName, developerIdentity);
+                this.deviceRequestsRepository. InsertDeviceConnectionRequest( deviceName, developerIdentity);
                 return Ok("Request has been set");
             }
             else  if (!isDeveloperAuthorized)
@@ -61,20 +69,20 @@ namespace ApiServer.Controllers
         [HmacAuthResponse]
         [HttpPost(template: "DeveloperCheckDeviceConnection")]
         public IActionResult DeveloperCheckDeviceConnection([FromBody] DeveloperCheckDeviceConnectionArgs args)
-        {
-            bool fault = false;
+        { 
             string developerIdentity = (string)HttpContext.Items["ClientName"];
 
             Console.WriteLine("Developer identity is: " + developerIdentity);
 
             // Check developer device connection authorization
-            bool isDeveloperAuthorized = this.queries.IsDeveloperConnectionToDeviceAuthorized( developerIdentity, args.DeviceName);
+            bool isDeveloperAuthorized =
+                developerAuthorizationsRepository.IsDeveloperConnectionToDeviceAuthorized( developerIdentity, args.DeviceName);
 
             if (isDeveloperAuthorized)
             {
 
                 // Checking device connection status
-                var deviceConnection = this.queries.CheckDeviceConnection(args.DeviceName);
+                var deviceConnection =  this.clientConnectionsRepository.CheckDeviceConnection(args.DeviceName);
 
                 Core.Entities.DeviceConnectionStatus currentDeviceConnectionStatus = ClientConnectionMapper.Mapper.Map<Core.Entities.DeviceConnectionStatus>(deviceConnection);
                 

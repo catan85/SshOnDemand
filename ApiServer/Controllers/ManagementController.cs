@@ -16,12 +16,10 @@ namespace ApiServer.Controllers
     public class ManagementController : ControllerBase
     {
         private readonly sshondemandContext dbContext;
-        private readonly Queries queries;
         private readonly ClientRepository clientRepository;
-        public ManagementController(sshondemandContext dbContext, Queries queries, ClientRepository clientRepository)
+        public ManagementController(sshondemandContext dbContext, ClientRepository clientRepository)
         {
             this.dbContext = dbContext;
-            this.queries = queries;
             this.clientRepository = clientRepository;
         }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ApiServer.Infrastructure;
 using ApiServer.Infrastructure.Models;
+using ApiServer.Infrastructure.Repositories;
 using SshOnDemandLibs;
 using SshOnDemandLibs.Entities;
 
@@ -38,8 +39,8 @@ namespace ApiServer
             List<string> deactivatedClientNames = new List<string>();
             using (sshondemandContext dbContext = new sshondemandContext())
             {
-                Queries q = new Queries(dbContext);
-                q.DeactivateOldRequests( 15, out deactivatedClientNames);
+                DeviceRequestsRepository deviceRequestsRepository = new DeviceRequestsRepository(dbContext);
+                deviceRequestsRepository.DeactivateOldDeviceRequests( 15, out deactivatedClientNames);
             }
 
             Ssh ssh = new Ssh(settings);
@@ -51,8 +52,8 @@ namespace ApiServer
             List<string> deactivatedClients = new List<string>();
             using (sshondemandContext dbContext = new sshondemandContext())
             {
-                Queries q = new Queries(dbContext);
-                q.ResetOldConnections(15, out deactivatedClients);
+                ClientConnectionsRepository clientConnections = new ClientConnectionsRepository(dbContext);
+                clientConnections.ResetOldConnections(15, out deactivatedClients);
             }
             Ssh ssh = new Ssh(settings);
             ssh.UnloadClientKeys(deactivatedClients);

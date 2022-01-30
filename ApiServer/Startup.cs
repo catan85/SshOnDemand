@@ -56,16 +56,17 @@ namespace ApiServer
             services.AddDbContext<sshondemandContext>(options =>
                     options.UseNpgsql(config.DbConnectionString));
 
-            services.AddTransient<Queries>();
             services.AddTransient<Ssh>();
 
-        
             // esempio di aggiunta di un repository standard, senza customizzazioni
             services.AddTransient<BaseRepository<ClientConnection>>();
 
             // aggiunta di un repo custom
             services.AddTransient<ClientRepository>();
             services.AddTransient<ClientConnectionsRepository>();
+            services.AddTransient<DeveloperAuthorizationsRepository>();
+            services.AddTransient<DeviceRequestsRepository>();
+
 
         }
 
