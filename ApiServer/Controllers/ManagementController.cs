@@ -17,10 +17,16 @@ namespace ApiServer.Controllers
     {
         private readonly sshondemandContext dbContext;
         private readonly ClientRepository clientRepository;
-        public ManagementController(sshondemandContext dbContext, ClientRepository clientRepository)
+        private readonly DeveloperAuthorizationsRepository developerAuthorizationsRepository;
+
+        public ManagementController(
+            sshondemandContext dbContext, 
+            ClientRepository clientRepository, 
+            DeveloperAuthorizationsRepository developerAuthorizationsRepository)
         {
             this.dbContext = dbContext;
             this.clientRepository = clientRepository;
+            this.developerAuthorizationsRepository = developerAuthorizationsRepository;
         }
 
         [HttpGet(template: "GetAllDevices")]
@@ -66,26 +72,21 @@ namespace ApiServer.Controllers
         [HttpGet(template: "GetDeveloperAuthorizations")]
         public ManagementResponseGetDeveloperAuthorizations GetDeveloperAuthorizations(int developerId)
         {
-            var authorizations = this.dbContext.DeveloperAuthorizations
-                .Where(c => c.DeveloperId == developerId)
-                .Include(c => c.Device);
+            List<Client> authorizedClients = this.developerAuthorizationsRepository.GetDeveloperAuthorizedClients(developerId);
 
-            var response = new ManagementResponseGetDeveloperAuthorizations();
-            response.DeveloperId = developerId;
-            response.AllowedDevices = new List<Core.Entities.Client>();
-            foreach (var auth in authorizations)
+            return new ManagementResponseGetDeveloperAuthorizations()
             {
-                response.AllowedDevices.Add(ClientMapper.Mapper.Map<Core.Entities.Client>(auth.Device));
-            }
-            return response;
+                DeveloperId = developerId,
+                AllowedDevices = authorizedClients.Select(c => ClientMapper.Mapper.Map<Core.Entities.Client>(c)).ToList()
+            };
         }
 
-   /*
+   
         [HttpPost(template: "UpdateDeveloperAuthorizations")]
-        public bool UpdateDeveloperAuthorizations(ManagementRequestUpdateDeveloperAuthorizations body)
+        public void UpdateDeveloperAuthorizations(ManagementRequestUpdateDeveloperAuthorizations body)
         {
-          
+            this.developerAuthorizationsRepository.ChangeAuthorizations(body.DeveloperId, body.AuthorizedDeviceIds);
         }
-     */
+     
     }
 }
